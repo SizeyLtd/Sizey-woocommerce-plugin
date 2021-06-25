@@ -1,4 +1,12 @@
 *** Sizey vroom recommendation Changelog ***
+2021-06-25 - version 0.0.3
+
+    * Dynamic avatar loading according to the measurement generation
+    * Code Optimization as per the Woocommerce standards
+    
+2021-06-21 - version 0.0.2
+    * make some things dynamic
+    * Move Recommendation button to full screen iframe
 
 2021-06-17 - version 0.0.1
 

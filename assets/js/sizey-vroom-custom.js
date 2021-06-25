@@ -1,6 +1,10 @@
 jQuery(document).ready(function () {
     jQuery(".sizey-garment-id").select2({
-        placeholder: "Select sizey garment"
+        placeholder: {
+            id: '-1', // the value of the option
+            text: 'Select a garment'
+        },
+        allowClear: true
     }).on('change', function (e) {
         let data = jQuery(".sizey-garment-id option:selected").text();
         jQuery("#sizey-garment-name").val(data);

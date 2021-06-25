@@ -3,7 +3,7 @@
  * Plugin Name: Sizey vroom integration
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 0.0.1
+ * Version: 0.0.3
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -84,27 +84,6 @@ function printr( $data) {
  * @since    1.0.0
  */
 function setup_vroom_sizey() {
-
-	$file = VROOM_PLUGIN_PATH . '/assets/images/vroom.png';
-		$filename = basename($file);
-		$upload_file = wp_upload_bits($filename, null, file_get_contents($file));
-	if (!$upload_file['error']) {
-		$wp_filetype = wp_check_filetype($filename, null );
-		$attachment = array(
-			'post_mime_type' => $wp_filetype['type'],
-			'post_parent' => $parent_post_id,
-			'post_title' => preg_replace('/\.[^.]+$/', '', $filename),
-			'post_content' => '',
-			'post_status' => 'inherit'
-		);
-		$attachment_id = wp_insert_attachment( $attachment, $upload_file['file'], $parent_post_id );
-		if (!is_wp_error($attachment_id)) {
-			require_once(ABSPATH . 'wp-admin/includes/image.php');
-			$attachment_data = wp_generate_attachment_metadata( $attachment_id, $upload_file['file'] );
-			wp_update_attachment_metadata( $attachment_id, $attachment_data );
-			update_option('vroom-gallery-image', $attachment_id);
-		}
-	}
 	return true;
 }
 
@@ -145,11 +124,103 @@ function sizey_vroom_save_product_specific_garment( $post_id ) {
 		// Save the size chart in product page.
 		update_post_meta($post_id, 'sizey-garment-id', $size_chart_select_nonce);
 		update_post_meta($post_id, 'sizey-garment-name', $size_chart_select_name_nonce);
+		$sizey_model_data  = get_photourl_by_garment_id($size_chart_select_nonce);
+		if (0 < count($sizey_model_data)) {
+			update_post_meta($post_id, 'sizey-model-data', json_encode($sizey_model_data));
+			$counter =0;
+			foreach ($sizey_model_data as $model_id => $value) {
+				if (0 === $counter) {
+					update_post_meta($post_id, 'post_avatar', json_encode($value));
+
+					if (isset($value['avatars'])) {
+						update_post_meta($post_id, 'avatars', $value['avatars']);
+					}
+					if (isset($value['poses'])) {
+						update_post_meta($post_id, 'avatars_poses', $value['poses']);
+					}
+					$modelurl = $value['photouri'];
+					$older_attachment_id = get_post_meta($post_id, 'sizey_gallery_image', true);
+
+					$attachment_id =  manage_media_gallery($modelurl, $post_id);
+					if ($attachment_id) {
+						wp_delete_attachment( $older_attachment_id );
+						update_post_meta($post_id, 'sizey_gallery_image', $attachment_id);
+					}
+				}
+				$counter ++;
+			}
+		}
+
 		return true;
 	}
 	return true;
 }
+/*
+ *
+ * */
+function save_image( $inPath, $product_id) {
+ //Download images from remote server
+	$outpath = VROOM_PLUGIN_PATH . 'assets/images/' . $product_id . '.png';
+	$in=    fopen($inPath, 'rb');
+	$out=   fopen($outpath, 'wb');
+	while ($chunk = fread($in, 8192)) {
+		fwrite($out, $chunk, 8192);
 
+	}
+
+	fclose($in);
+	fclose($out);
+
+	return $outpath;
+}
+
+/**
+ * Delete file using file path
+ */
+
+function delete_image($image_path) {
+	if (is_file ($image_path)) {
+		unlink($image_path);
+	}
+	return true;
+}
+
+/*
+ * upload image into gallery
+ *
+ * */
+function manage_media_gallery( $file_url, $post_id) {
+	$file = save_image($file_url, $post_id);
+	if (!$file) {
+		return false;
+	}
+
+	//$file = VROOM_PLUGIN_PATH . 'assets/images/'.$post_id.'.png';
+	$filename = basename($file);
+	$upload_file = wp_upload_bits($filename, null, file_get_contents($file));
+	if (!$upload_file['error']) {
+		$wp_filetype = wp_check_filetype($filename, null );
+		$attachment = array(
+			'post_mime_type' => $wp_filetype['type'],
+			'post_parent' => $post_id,
+			'post_title' => preg_replace('/\.[^.]+$/', '', $filename),
+			'post_content' => '',
+			'post_status' => 'inherit'
+		);
+		$attachment_id = wp_insert_attachment( $attachment, $upload_file['file'], $post_id );
+
+		if (!is_wp_error($attachment_id)) {
+			require_once(ABSPATH . 'wp-admin/includes/image.php');
+			$attachment_data = wp_generate_attachment_metadata( $attachment_id, $upload_file['file'] );
+			wp_update_attachment_metadata( $attachment_id, $attachment_data );
+			delete_image($file);
+			return $attachment_id;
+
+		}
+	}
+
+	return false;
+}
 
 /**
  * Adds the meta box container.
@@ -220,7 +291,7 @@ function generate_vroom_config_form() {
 	echo '<div class="data-table">
 <ul id="sizey-tabs">
     <li><a href="#" name="sizeytab1" >Sizey setting</a></li>
-    
+
 </ul>
 
 <div id="sizey-content">
@@ -252,8 +323,8 @@ function vroom_deregister_javascript() {
 add_action( 'wp_enqueue_scripts', 'vroom_embed_iframe_scripts', 999 );
 function vroom_embed_iframe_scripts() {
 	wp_enqueue_script( VROOM_PREFIX . '-custom-photoswipe', VROOM_PLUGIN_URL . 'assets/js/photoswipe.js', array('jquery'), VROOM_VERSION, true );
-	wp_enqueue_style( VROOM_PREFIX . '-style-prefetch', VROOM_PLUGIN_URL . 'assets/css/photoswipe.css', array(), VROOM_VERSION, false );
-	wp_enqueue_style( VROOM_PREFIX . '-style-product-page', VROOM_PLUGIN_URL . 'assets/css/vroom-front.css', array() , VROOM_VERSION, false);
+	//wp_enqueue_style( VROOM_PREFIX . '-style-prefetch', VROOM_PLUGIN_URL . 'assets/css/photoswipe.css', array(), VROOM_VERSION, false );
+	//wp_enqueue_style( VROOM_PREFIX . '-style-product-page', VROOM_PLUGIN_URL . 'assets/css/vroom-front.css', array() , VROOM_VERSION, false);
 }
 
 function add_sizey_recommendation_button() {
