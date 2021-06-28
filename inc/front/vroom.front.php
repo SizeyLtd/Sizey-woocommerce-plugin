@@ -39,7 +39,6 @@ function wcevzw_woo_display_embed_video( $html ) {
 	?>
 <script type="text/javascript">
 		jQuery(window).load(function(){
-			//jQuery( '.woocommerce-product-gallery .flex-viewport' ).prepend( '<div class="emoji-search-icon"></div>' );
 			jQuery( 'a.woocommerce-product-gallery__trigger' ).hide();
 		});
 </script>
@@ -71,11 +70,11 @@ function wcevzw_woo_display_embed_video( $html ) {
 jQuery(window).on('load', function () {
 
 	let modelid = sessionStorage.getItem('model-id');
-    
+
 	let avatars_poses = 'default';
 
 	 jQuery(".woocommerce-product-gallery__image").click(()=>{
-		
+
 		setTimeout(()=> {
 			if(modelid) {
 				document.getElementById("vroom_iframe1").contentWindow.postMessage(
@@ -105,25 +104,25 @@ function loadModelinIframe() {
 		let model_id = sessionStorage.getItem('model-id');
 		if(!model_id) {
 			model_id = 'f_sz_mid_n38';
-		}	
+		}
 			document.getElementById("vroom_iframe").contentWindow.postMessage(
-                changeAvatarAction(
-                    model_id,
-                
-                ),
-                "*"
-            );
-			document.getElementById("vroom_iframe").contentWindow.postMessage(
-                changeGarmentAction(
-                    "<?php echo esc_html($sizey_garment_id); ?>",
-                    model_id
-                ),
-                "*"
-            );
-		
+				changeAvatarAction(
+					model_id,
 
-            loaded = true;
-        }
+				),
+				"*"
+			);
+			document.getElementById("vroom_iframe").contentWindow.postMessage(
+				changeGarmentAction(
+					"<?php echo esc_html($sizey_garment_id); ?>",
+					model_id
+				),
+				"*"
+			);
+
+
+			loaded = true;
+		}
 
 }
 
@@ -133,18 +132,15 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 //document.getElementById('iframeliid').addEventListener('touchstart', loadModelinIframe);
 });
 
-
-
-
 </script>
-        <style>
-            .woocommerce-product-gallery__image {
-                position:relative !important;
-            }
+		<style>
+			.woocommerce-product-gallery__image {
+				position:relative !important;
+			}
 			button.pswp__button--share {
 				display:none !important;
 			}
-        </style>
+		</style>
 			<?php
 	}
 
@@ -203,17 +199,17 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 					$sizeypopupclass =' ';
 				}
 
-				    $sizey_css = esc_html(get_option('sizey-css'));
+					$sizey_css = esc_html(get_option('sizey-css'));
 					$sizeypopupclass = esc_html($sizeypopupclass);
-					$sizey_api_key = esc_html( get_option('sizey-api-key'));
+					$vroom_sizey_api_key = esc_html( get_option('vroom-sizey-api-key'));
 					$product_id= esc_html($product_id);
 					$button_name = esc_html(get_option('sizey-button'));
 					$anchorData = "<button id=&quot;SizeyVroomButton&quot;
 	                style=&quot;$sizey_css position:absolute; right: 30px; top: 50px;&quot;
 	                target=&quot;popup&quot; $sizeypopupclass
-                    onclick=&quot;openSizeyVroomPopup(&apos;$sizey_api_key&apos;, &apos;$product_id&apos;,&apos;$sizey_garment_id&apos;)&quot;>$button_name</button>";
+                    onclick=&quot;openSizeyVroomPopup(&apos;$vroom_sizey_api_key&apos;, &apos;$product_id&apos;,&apos;$sizey_garment_id&apos;)&quot;>$button_name</button>";
 
-					$newhtml .= '<a href="#" data-type="video" rel="prettyPhoto[product-gallery]" data-type="video" data-video="<div class=&quot;wrapper&quot;><div style=&quot;position:relative;&quot;  class=&quot;video-wrapper&quot;>'.$anchorData.'<iframe width=&quot;1000&quot; height=&quot;640&quot; src=&quot;' . esc_url ( $video_link ) . '&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;true&quot; webkitallowfullscreen=&quot;true&quot; mozallowfullscreen=&quot;true&quot; id=&quot;vroom_iframe1&quot; ></iframe></div></div>" ><i class="fas fa-expand-arrows-alt fa-2x"  aria-hidden="true" style="top:10px; position:absolute; right:10px;"></i><iframe id="vroom_iframe"   class="woo-iframelist" width="" height="" src="' . esc_url( $video_link ) . '" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no" ></iframe></a>';
+					$newhtml .= '<a href="#" data-type="video" rel="prettyPhoto[product-gallery]" data-type="video" data-video="<div class=&quot;wrapper&quot;><div style=&quot;position:relative;&quot;  class=&quot;video-wrapper&quot;>' . $anchorData . '<iframe width=&quot;1000&quot; height=&quot;640&quot; src=&quot;' . esc_url ( $video_link ) . '&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;true&quot; webkitallowfullscreen=&quot;true&quot; mozallowfullscreen=&quot;true&quot; id=&quot;vroom_iframe1&quot; ></iframe></div></div>" ><i class="fas fa-expand-arrows-alt fa-2x"  aria-hidden="true" style="top:10px; position:absolute; right:10px;"></i><iframe id="vroom_iframe"   class="woo-iframelist" width="" height="" src="' . esc_url( $video_link ) . '" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no" ></iframe></a>';
 			} else {
 				$link = ( empty($video_link) ) ? $image_link : $video_link;
 
@@ -223,36 +219,7 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 			$loop++;
 			$newhtml .= '</div>';
 		}
-		$allowed_html = array(
-			'div'      => array(
-				'data-thumb'  => array(),
-				'class' => array(),
-				'data-thumb-alt' => array(),
-				'style' =>array(),
-				'data-size' => array(),
 
-			),
-			'a'     => array(
-				'href' => array(),
-				'data-type' => array(),
-				'data-video' => array(),
-				'class' =>array(),
-				'title' => array(),
-				'test' => array()
-			),
-			'iframe'     => array(
-				'id' => array(),
-				'width' => array(),
-				'height' => array(),
-				'class' =>array(),
-				'src' => array(),
-				'frameborder' => array(),
-				'allowfullscreen' => array(),
-				'webkitallowfullscreen' => array(),
-				'mozallowfullscreen' => array(),
-				'scrolling' => array()
-			)
-		);
 		echo $newhtml;
 		//echo wp_kses(  $newhtml,  $allowed_html );
 	}

@@ -5,7 +5,7 @@ if (! defined('WPINC')) {
 }
 global $product;
 $productID = get_the_ID();
-$sizey_api_key = get_option('sizey-api-key');
+$vroom_sizey_api_key = get_option('vroom-sizey-api-key');
 $size_chart_data_with_id = array();
 $size_slug = array();
 $recommendedSizey = array();
@@ -30,10 +30,10 @@ if (get_option('sizey-button-type') === 'button') {
 
 // echo '<span id="sizeyVroomRecommendedButton">';
 if (!$session_data['product_' . $productID]) { ?>
-    <!--<a href="#" id="SizeyVroomButton"
+	<!--<a href="#" id="SizeyVroomButton"
 	   style="<?php echo esc_html(get_option('sizey-css')); ?>"
 	   target="popup"  <?php echo esc_html($sizeypopupclass); ?>
-	   onclick="openSizeyVroomPopup('<?php echo esc_html($sizey_api_key); ?>', <?php echo esc_html($productID); ?>); return false;">
+	   onclick="openSizeyVroomPopup('<?php echo esc_html($vroom_sizey_api_key); ?>', <?php echo esc_html($productID); ?>); return false;">
 		<?php echo esc_html(get_option('sizey-button')); ?>
 	</a>-->
 <?php } else { ?>

@@ -6,7 +6,7 @@ if (! defined('WPINC')) {
 
 function vroom_registration_scripts() {
 
-	wp_register_script('select2',
+	wp_register_script('select2-vroom',
 		plugins_url('../assets/js/select2.min.js', __FILE__),
 		array( 'jquery' ),
 		true,
@@ -18,7 +18,7 @@ function vroom_registration_scripts() {
 		time(),
 		true
 	);
-	wp_enqueue_script('select2');
+	wp_enqueue_script('select2-vroom');
 	wp_enqueue_script('sizey_vroom_custom');
 
 }
@@ -26,16 +26,17 @@ function vroom_registration_scripts() {
 add_action('admin_enqueue_scripts', 'vroom_registration_scripts');
 
 function vroom_admin_style() {
-	wp_enqueue_style('select2-styles',
+	wp_enqueue_style('vroom-select2-styles',
 		plugins_url('../assets/css/select2.min.css', __FILE__),
 		[],
 		true
 	);
-	wp_enqueue_style('form-styles',
-		plugins_url('../assets/css/form.css', __FILE__),
+	wp_enqueue_style('vroom-form-styles',
+		plugins_url('../assets/css/vroom-form.css', __FILE__),
 		[],
 		true
 	);
+
 }
 add_action('admin_enqueue_scripts', 'vroom_admin_style');
 
@@ -53,6 +54,15 @@ function vroom_front_scripts() {
 		//true,
 		time(),
 		true);
+	wp_register_script('vroom-photoswipe',
+		plugins_url('../assets/js/photoswipe.js', __FILE__),
+		array( 'jquery' ),
+		//true,
+		time(),
+		true);
+
 	wp_enqueue_script('vroom');
+	wp_enqueue_script('uuid');
+	wp_enqueue_script('vroom-photoswipe');
 }
 add_action('wp_enqueue_scripts', 'vroom_front_scripts');

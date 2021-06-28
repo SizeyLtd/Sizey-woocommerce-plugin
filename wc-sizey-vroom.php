@@ -3,7 +3,7 @@
  * Plugin Name: Sizey vroom integration
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 0.0.3
+ * Version: 0.0.4
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -18,7 +18,7 @@ if ( !defined( 'VROOM_PLUGIN_URL' ) ) {
 	define( 'VROOM_PLUGIN_URL', plugin_dir_url( __FILE__ ) ); // Plugin url
 }
 if ( !defined( 'VROOM_VERSION' ) ) {
-	define( 'VROOM_VERSION', '0.0.1' ); // Version of plugin
+	define( 'VROOM_VERSION', '0.0.4' ); // Version of plugin
 }
 
 if ( !defined( 'VROOM_PLUGIN_PATH' ) ) {
@@ -45,7 +45,7 @@ if (file_exists(plugin_dir_path(__FILE__) . 'inc/vroom-admin-product-page-custom
 if (file_exists(VROOM_PLUGIN_PATH . '/inc/front/' . VROOM_PREFIX . '.front.php')) {
 	require_once( VROOM_PLUGIN_PATH . '/inc/front/' . VROOM_PREFIX . '.front.php' );
 }
-
+$sizeychdata = get_vroom_sizey_chart_data();
 /**
  * Check and validate that WooCommerce plugin is active
  */
@@ -84,6 +84,23 @@ function printr( $data) {
  * @since    1.0.0
  */
 function setup_vroom_sizey() {
+	$attributes = wc_get_attribute_taxonomies();
+	$allAttr = array();
+	foreach ($attributes as $attr) {
+		$allAttr[] =$attr->attribute_name;
+	}
+	update_option('vroom-sizey-button-type', 'button');
+	update_option('vroom-sizey-button', 'Find my size now!');
+	update_option('vroom-sizey-unavailable-message', 'Your perfect fit size of this product is not available. Try another size or product.');
+	update_option('vroom-sizey-button-position', 'woocommerce_after_add_to_cart_button');
+	if (count($allAttr)==1) {
+		update_option('vroom-global-size-attributes', $allAttr[0]);
+		return true;
+	}
+	if (in_array('size', $allAttr)) {
+		update_option('vroom-global-size-attributes', 'size');
+		return true;
+	}
 	return true;
 }
 
@@ -178,7 +195,7 @@ function save_image( $inPath, $product_id) {
  * Delete file using file path
  */
 
-function delete_image($image_path) {
+function delete_image( $image_path) {
 	if (is_file ($image_path)) {
 		unlink($image_path);
 	}
@@ -283,30 +300,282 @@ function vroom_config_callback() {
 	generate_vroom_config_form();
 }
 
+/**
+ * Update Vroom configuration data.
+ *
+ * @return null
+ */
 function update_vroom_config() {
 
+	if ( isset($_POST['vroom-sizey-button-configuration'])) {
+		if (
+			! isset( $_POST['vroom-config-nonce-field'] )
+			|| ! wp_verify_nonce( sanitize_text_field($_POST['vroom-config-nonce-field']), 'sizey-vroom-config-action' )
+		) {
+
+			return false;
+		}
+
+		if (trim(filter_input(INPUT_POST, 'vroom-sizey-api-key', FILTER_SANITIZE_STRING))!=='') {
+			update_option(
+				'vroom-sizey-api-key',
+				filter_input(INPUT_POST, 'vroom-sizey-api-key', FILTER_SANITIZE_STRING)
+			);
+			echo '<div class="notice notice-success is-dismissible"> <p>Success! API have been saved.</p> </div>';
+		} else {
+			echo '<div class="notice notice-warning is-dismissible"> <p>Error! API update error.</p> </div>';
+		}
+
+		update_option(
+			'vroom-sizey-button-position',
+			filter_input(INPUT_POST, 'vroom-sizey-button-position', FILTER_SANITIZE_STRING)
+		);
+
+		if (trim(filter_input(INPUT_POST, 'vroom-sizey-button', FILTER_SANITIZE_STRING))!='') {
+			update_option(
+				'vroom-sizey-button',
+				filter_input(INPUT_POST, 'vroom-sizey-button', FILTER_SANITIZE_STRING)
+			);
+			echo '<div class="notice notice-success is-dismissible"> <p>Success! Button data has updated</p> </div>';
+		} else {
+			echo '<div class="notice notice-warning is-dismissible"> <p>Error! Button name error.</p> </div>';
+		}
+
+		update_option(
+			'vroom-sizey-recommendation-button-add-to-cart',
+			filter_input(INPUT_POST, 'vroom-sizey-recommendation-button-add-to-cart', FILTER_SANITIZE_STRING)
+		);
+
+		update_option(
+			'vroom-sizey-button-type',
+			filter_input(INPUT_POST, 'vroom-sizey-button-type', FILTER_SANITIZE_STRING)
+		);
+
+		update_option(
+			'vroom-sizey-unavailable-message',
+			filter_input(INPUT_POST, 'vroom-sizey-unavailable-message', FILTER_SANITIZE_STRING)
+		);
+
+		update_option(
+			'vroom-sizey-css',
+			filter_input(INPUT_POST, 'vroom-sizey-css', FILTER_SANITIZE_STRING)
+		);
+
+
+	}
+
+	if ( isset( $_POST['vroom-global-size-attribute-submit'] ) ) {
+		if (
+			! isset( $_POST['vroom-boutique-attribute-define-nonce-field'] )
+			|| ! wp_verify_nonce( sanitize_text_field($_POST['vroom-boutique-attribute-define-nonce-field']), 'vroom-boutique-attribute-define-action' )
+		) {
+			return false;
+		}
+		update_option(
+			'vroom-global-size-attributes',
+			filter_input(INPUT_POST, 'vroom-global-size-attributes', FILTER_SANITIZE_STRING)
+		);
+	}
+
+	//Individual Sizey Attributes mapping
+	if (isset($_POST['vroom-individual-attribute-mapping'])) {
+		if (
+			! isset( $_POST['vroom-sizey-size-specific-attribute-mapping-nonce-field'] )
+			|| ! wp_verify_nonce( sanitize_text_field($_POST['vroom-sizey-size-specific-attribute-mapping-nonce-field']), 'vroom-sizey-size-specific-attribute-mapping-action' )
+		) {
+			return false;
+		}
+		$sizey_id = filter_input(INPUT_POST, 'sizey_id', FILTER_SANITIZE_STRING);
+		//Store the selected data against sizey id
+		$count_data = 0;
+		if (isset($_POST['boutique_attribute']) && isset($_POST['sizey_selected'])) {
+			$boutique_attribute =array();
+			$count_data = count($_POST['boutique_attribute']);
+			for ($i=0; $i < $count_data; $i++) {
+				if (isset($_POST['boutique_attribute'][$i])) {
+					$boutique_attribute[$i] = sanitize_text_field($_POST['boutique_attribute'][$i]);
+				}
+			}
+
+			$sizey_selected =array();
+			$count_data = count($_POST['sizey_selected']);
+			for ($i=0; $i<$count_data; $i++) {
+				if (isset($_POST['sizey_selected'][$i])) {
+					$sizey_selected[$i] = sanitize_text_field($_POST['sizey_selected'][$i]);
+				}
+			}
+			$selectedData = array_combine($boutique_attribute, $sizey_selected);
+			update_option($sizey_id, $selectedData);
+			echo '<div class="notice notice-success is-dismissible">
+                    <p>Success! Sizechart mapping have been saved.</p>
+                  </div>';
+		}
+	}
+
+	if (isset($_POST['vroom-global-attribute-mapping'])) {
+		if (
+			! isset( $_POST['vroom-boutique-attribute-sizey-global-mapping-nonce-field'] )
+			|| ! wp_verify_nonce( sanitize_text_field($_POST['vroom-boutique-attribute-sizey-global-mapping-nonce-field']), 'vroom-boutique-attribute-sizey-global-mapping-action' )
+		) {
+			die('custom stop');
+			return false;
+		}
+
+		$boutique_attributes =array();
+		$count_data = count($_POST['boutique_attribute']);
+		for ($i=0; $i<$count_data; $i++) {
+			if (isset($_POST['boutique_attribute'][$i])) {
+				$boutique_attributes[$i] = sanitize_text_field($_POST['boutique_attribute'][$i]);
+			}
+		}
+		$arrayToStore = array();
+		foreach ($boutique_attributes as $boutique_size) {
+			$arrayToStore[$boutique_size] = array();
+			if (isset($_POST['global-sizey-' . $boutique_size])) {
+				$global_sizey_count = count($_POST['global-sizey-' . $boutique_size]);
+				for ($i=0; $i < $global_sizey_count; $i++) {
+					if (isset($_POST['global-sizey-' . $boutique_size][$i])) {
+						$arrayToStore[$boutique_size][$i] = htmlspecialchars(sanitize_text_field($_POST['global-sizey-' . $boutique_size][$i]));
+					}
+				}
+			} else {
+				$arrayToStore[$boutique_size] = [];
+			}
+
+		}
+
+		update_option('vroom-global-sizey-mapping', json_encode($arrayToStore));
+		echo '<div class="notice notice-success is-dismissible">
+                <p>Success! Global Sizechart mapping have been saved.</p>
+            </div>';
+	}
+
+	//Done
+	if (isset($_POST['redirect-url'])) {
+		if (
+			! isset( $_POST['boutique-attribute-redirect-url-nonce-field'] )
+			|| ! wp_verify_nonce( sanitize_text_field($_POST['boutique-attribute-redirect-url-nonce-field']), 'boutique-attribute-redirect-url-action' )
+		) {
+			//wp_nonce_ays( '' );
+			return false;
+		}
+
+		//Load the individual sizey id configuration mapping
+		if (isset($_POST['sizey_id'])) {
+			$url = 'admin.php?page=vroom-config&sizey_id=' . sanitize_text_field( $_POST['sizey_id'] );
+			header( 'location: ' . $url );
+			exit();
+		}
+	}
+
+	//Done
+	if (isset($_POST['vroom-sizey-attribute-reset'])) {
+		if (
+			! isset( $_POST['vroom-sizey-size-specific-attribute-mapping-nonce-field'] )
+			|| ! wp_verify_nonce( sanitize_text_field($_POST['vroom-sizey-size-specific-attribute-mapping-nonce-field']), 'vroom-sizey-size-specific-attribute-mapping-action' )
+		) {
+			return false;
+		}
+		if (isset($_POST['sizey_id'])) {
+			delete_option(sanitize_text_field($_POST['sizey_id']));
+			echo '<div class="notice notice-success is-dismissible">
+                <p>Success! Individual sizechart has been reset.</p>
+            </div>';
+		}
+
+	}
+	return null;
 }
+
+
 
 function generate_vroom_config_form() {
 	echo '<div class="data-table">
-<ul id="sizey-tabs">
-    <li><a href="#" name="sizeytab1" >Sizey setting</a></li>
-
+<ul id="vroom-sizey-tabs">
+    <li><a href="#" name="vroomsizeytab1" >Sizey setting</a></li>
+	<li><a href="#" name="vroomsizeytab2" >Store wide size mapping</a></li>
 </ul>
-
-<div id="sizey-content">
-    <div id="sizeytab1">';
+<div id="vroom-sizey-content">
+    <div id="vroomsizeytab1">';
 
 	if (file_exists(VROOM_PLUGIN_PATH . 'inc/admin/sizey-vroom-configuration.php')) {
 		require_once VROOM_PLUGIN_PATH . 'inc/admin/sizey-vroom-configuration.php';
 	}
 	echo ' </div>';
-
+	echo '<div id="vroomsizeytab2">';
+	if (file_exists(VROOM_PLUGIN_PATH . 'inc/admin/sizey-vroom-global-configuration.php')) {
+		require_once VROOM_PLUGIN_PATH . 'inc/admin/sizey-vroom-global-configuration.php';
+	}
+	echo '</div>';
 	echo '</div></div>';
-
+	if (file_exists(VROOM_PLUGIN_PATH . 'inc/sizey-vroom-instruction.php')) {
+		require_once VROOM_PLUGIN_PATH . 'inc/sizey-vroom-instruction.php';
+	}
 
 	return null;
 }
+
+
+/**
+ * Dropdrown creation of the global sizey mapping
+ */
+
+function vroom_generate_global_sizey_mapping( $boutique_size) {
+	$mapped_attribute = get_vroom_global_mapping_by_boutique($boutique_size);
+	$mapped_attribute_count = count($mapped_attribute);
+	for ($counter =0; $counter < $mapped_attribute_count; $counter++) {
+		$mapped_attribute[$counter] = $mapped_attribute[$counter];
+	}
+	$sizeySizesData = getVroomGlobalSizeyConfiguration();
+
+	$selectData = '<select name="global-sizey-' . $boutique_size . '[]" id="global-sizey"
+                    class="sizey-global-configuration" multiple="multiple">';
+	foreach ($sizeySizesData as $sizes) {
+		$selectData .='<option ';
+		if (in_array($sizes, $mapped_attribute)) {
+			$selectData .= ' selected="selected"';
+		}
+		$selectData .= ' value="' . $sizes . '">' . $sizes . '</option>';
+	}
+	$selectData .= '</select>';
+	$allowed_html = array(
+		'select'      => array(
+			'name'  => array(),
+			'id' => array(),
+			'class' => array(),
+			'multiple' => array()
+		),
+		'option'     => array(
+			'value' => array(),
+			'selected' => array()
+		)
+	);
+	echo wp_kses( $selectData, $allowed_html );
+
+}
+
+function get_vroom_global_mapping_by_boutique( $boutique_attribute ) {
+	$global_sizey_mapping = json_decode(get_option('vroom-global-sizey-mapping'), true);
+	if ($global_sizey_mapping[$boutique_attribute]) {
+		return $global_sizey_mapping[$boutique_attribute];
+	}
+	return [];
+}
+
+function getVroomGlobalSizeyConfiguration() {
+	global $sizeychdata;
+	$sizesList = array();
+	foreach ($sizeychdata as $sizeys) {
+		$sizeslisting=array();
+		foreach ($sizeys['sizes'][0]['sizes'] as $individual_sizey_size) {
+			$sizeslisting[] = htmlspecialchars(sanitize_text_field($individual_sizey_size));
+		}
+		$sizesList = array_unique(array_merge($sizesList, $sizeslisting));
+	}
+	$sizes_List = array_filter($sizesList, 'strlen');
+	return $sizes_List;
+}
+
 
 /**
  * Deregister WooCommerce Scripts
@@ -315,16 +584,6 @@ add_action( 'wp_print_scripts', 'vroom_deregister_javascript', 100 );
 function vroom_deregister_javascript() {
 	wp_deregister_script( 'prettyPhoto' );
 	wp_deregister_script( 'prettyPhoto-init' );
-}
-
-/**
- * Enqueue script and style for plugin
- */
-add_action( 'wp_enqueue_scripts', 'vroom_embed_iframe_scripts', 999 );
-function vroom_embed_iframe_scripts() {
-	wp_enqueue_script( VROOM_PREFIX . '-custom-photoswipe', VROOM_PLUGIN_URL . 'assets/js/photoswipe.js', array('jquery'), VROOM_VERSION, true );
-	//wp_enqueue_style( VROOM_PREFIX . '-style-prefetch', VROOM_PLUGIN_URL . 'assets/css/photoswipe.css', array(), VROOM_VERSION, false );
-	//wp_enqueue_style( VROOM_PREFIX . '-style-product-page', VROOM_PLUGIN_URL . 'assets/css/vroom-front.css', array() , VROOM_VERSION, false);
 }
 
 function add_sizey_recommendation_button() {
@@ -374,7 +633,7 @@ function generate_vroom_recommendation_add_to_cart_button() {
 		}
 		$size_mapping_data = get_option($individual_size_chart_id); // Get individual sizey id mapped with boutique sizes
 		if (!$size_mapping_data) {
-			$size_mapping_data = get_option('global-sizey-mapping');
+			$size_mapping_data = get_option('vroom-global-sizey-mapping');
 			if (!isset($size_mapping_data)) {
 				$jsontoreturn['status'] = 'success';
 				$jsontoreturn['content'] = '';
@@ -455,3 +714,63 @@ function generate_vroom_recommendation_add_to_cart_button() {
 }
 add_action( 'wp_ajax_nopriv_generate_vroom_recommendation_add_to_cart_button', 'generate_vroom_recommendation_add_to_cart_button' );
 add_action( 'wp_ajax_generate_vroom_recommendation_add_to_cart_button', 'generate_vroom_recommendation_add_to_cart_button' );
+
+
+function get_vroom_sizey_ids ( $sizey_id = null) {
+		global $sizeychdata;
+		$sizeyData = $sizeychdata;
+		$complete_details = array();
+	if ( null != $sizey_id ) {
+		foreach ($sizeyData as $sizeys) {
+			if ($sizeys['id'] == $sizey_id) {
+				$complete_details['id'] = $sizey_id;
+				$complete_details['name'] = ucwords($sizeys['brand'] . ' - ' . $sizeys['gender'] . ' - '
+													. $sizeys['garment']);
+				$complete_details['size'] = array_filter(array_unique($sizeys['sizes'][0]['sizes']), 'strlen');
+			}
+		}
+	} else {
+		foreach ($sizeyData as $sizeys) {
+			$complete_details[$sizeys['id']] = ucwords($sizeys['brand'] . ' - '
+													   . $sizeys['gender'] . ' - ' . $sizeys['garment']);
+		}
+	}
+		return $complete_details;
+
+
+}
+
+
+
+function generate_vroom_sizey_specific_boutique_dropdown_mapping( $sizey_details, $boutique_size) {
+	$sizes = $sizey_details['size'];
+	foreach ($sizes as $key => $value) {
+		$sizes[$key] = htmlspecialchars(sanitize_text_field($value));
+	}
+	$sizes =array_unique($sizes);
+	$sizes = array_values($sizes);
+	$mapped_sizes = get_option($sizey_details['id'], true);
+	$selectbox = '<select name="sizey_selected[]" >';
+	foreach ($sizes as $size) {
+		$selectbox .= '<option ';
+		if ( htmlspecialchars(sanitize_text_field($mapped_sizes[$boutique_size])) ===  $size) {
+			$selectbox .= ' selected="selected"';
+		}
+		$selectbox .= ' value="' . $size . '"';
+		$selectbox .= '>' . $size . '</option>';
+	}
+	$selectbox .= '</select>';
+	$allowed_html = array(
+		'select'      => array(
+			'name'  => array(),
+			'id' => array(),
+			'class' => array(),
+			'multiple' => array()
+		),
+		'option'     => array(
+			'value' => array(),
+			'selected' => array()
+		)
+	);
+	echo wp_kses( $selectbox, $allowed_html );
+}

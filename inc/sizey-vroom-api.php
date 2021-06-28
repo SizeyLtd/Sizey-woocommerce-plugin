@@ -1,4 +1,28 @@
 <?php
+
+function get_vroom_sizey_chart_data() {
+	$sizey_api_key = get_option('vroom-sizey-api-key');
+	$url = 'https://recommendation-api.sizey.ai/sizecharts';
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		'x-sizey-key: "' . $sizey_api_key . '"'
+	));
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_HTTPGET, 1);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	$results = curl_exec($ch);
+	curl_close($ch);
+	$size_chart_data =array();
+
+	if ($results) {
+		$size_chart_data = json_decode($results, true);
+	}
+
+	return $size_chart_data;
+}
+
+
 function get_sizey_vroom_garment_data() {
 	$url = 'https://vroom-api.sizey.ai/SXiKCZZxGrtnpbykpp0J/garments';
 	$ch = curl_init();
