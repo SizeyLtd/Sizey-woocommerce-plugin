@@ -3,16 +3,30 @@ function openSizeyVroomPopup(sizey_api_key='',  product_id, garment_id)
     sizey_api_key = sizey_api_key.trim();
     product_id = product_id.trim();
     sessionStorage.setItem( 'sizey-product-id', product_id );
+    let unique_id = generateuuid();
+    if (!sessionStorage.getItem('unique-id')) {
+        sessionStorage.setItem('unique-id', unique_id )
+    }
     if (sizey_api_key!='') {
         let wnd = window.open("https://recommendation.sizey.ai/?apikey=" + sizey_api_key +"&measureOnly=true", 'popup', 'width=800,height=800,scrollbars=yes,resizable=yes');
-     
+
         window.onmessage = function (e) {
             let sizeyEvent = e.data;
+            console.log(sizeyEvent.measurement);
+            sessionStorage.setItem("event_data", JSON.stringify(sizeyEvent.measurement));
             if (sizeyEvent.event === 'sizey-measurements') {
                 let sizey_measurement_id = sizeyEvent.measurements;
                 sessionStorage.setItem( 'sizey-measurement-id', sizey_measurement_id.measurementId );
-                endPointURL = "https://vroom-api.sizey.ai/my-avatar?measurementId="+sizey_measurement_id.measurementId+"&gender=female";
+                sessionStorage.setItem( 'gender', sizey_measurement_id.gender );
+                endPointURL = "https://vroom-api.sizey.ai/my-avatar?measurementId="+sizey_measurement_id.measurementId+"&gender="+sizey_measurement_id.gender;
+                let jsonData={
+                    "sessionId": sessionStorage.getItem('unique-id'),
+                    "productId":  product_id,
+                    "measurementId": sessionStorage.getItem('sizey-measurement-id')
+                }
+                callRecommendationAPIForVroom("https://analytics-api-dot-sizey-ai.appspot.com/recommendation", jsonData, sizey_api_key);
                 callGetAPI(endPointURL, garment_id);
+
             }
         };
     }
@@ -30,11 +44,11 @@ function loadModelinIframeUsingMainJs(garment_id) {
 		let model_id = sessionStorage.getItem('model-id');
 		if(!model_id) {
 			model_id = 'f_sz_mid_n38';
-		}	
+		}
 			document.getElementById("vroom_iframe").contentWindow.postMessage(
                 changeAvatarActionUsingJs(
                     model_id,
-                
+
                 ),
                 "*"
             );
@@ -45,7 +59,7 @@ function loadModelinIframeUsingMainJs(garment_id) {
                 ),
                 "*"
             );
-		
+
 }
 
 
@@ -75,7 +89,7 @@ function openSizeyPopupViaVroom(sizey_api_key='', chartId='', product_id)
                     "productId":  product_id,
                     "measurementId": sessionStorage.getItem('sizey-measurement-id')
                 }
-                //callRecommendationAPI("https://analytics-api-dot-sizey-ai.appspot.com/recommendation", jsonData, sizey_api_key);
+                callRecommendationAPIForVroom("https://analytics-api-dot-sizey-ai.appspot.com/recommendation", jsonData, sizey_api_key);
                 //call_realtime_button(unique_id, JSON.stringify(sizeyRecommendation));
             }
             if (sizeyEvent.event === 'sizey-measurements') {
@@ -90,7 +104,7 @@ function openSizeyPopupViaVroom(sizey_api_key='', chartId='', product_id)
 
 
 
-function callRecommendationAPI(endpointURL, jSONdata, sizey_key)
+function callRecommendationAPIForVroom(endpointURL, jSONdata, sizey_key)
 {
 
     jSONdata = JSON.stringify(jSONdata);

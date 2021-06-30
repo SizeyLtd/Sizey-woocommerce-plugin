@@ -16,16 +16,16 @@ exit;
 /**
  * Embed Videos To Product Image Gallery WooCommerce styles and scripts.
  */
-add_action( 'wp_head', 'wcevzw_woo_scripts_styles' );
-function wcevzw_woo_scripts_styles() {
+add_action( 'wp_head', 'vroom_woo_scripts_styles' );
+function vroom_woo_scripts_styles() {
 	$enable_lightbox = get_option( 'woocommerce_enable_lightbox' );
 }
 
 /**
  * Remove Gallery Thumbnail Images
  */
-add_action( 'template_redirect', 'wcevzw_remove_gallery_thumbnail_images' );
-function wcevzw_remove_gallery_thumbnail_images() {
+add_action( 'template_redirect', 'vroom_remove_gallery_thumbnail_images' );
+function vroom_remove_gallery_thumbnail_images() {
 	if ( is_product() ) {
 		remove_action( 'woocommerce_product_thumbnails', 'woocommerce_show_product_thumbnails', 20 );
 	}
@@ -34,21 +34,13 @@ function wcevzw_remove_gallery_thumbnail_images() {
 /**
  * Add new html layout of single product thumbnails
  */
-add_action( 'woocommerce_product_thumbnails', 'wcevzw_woo_display_embed_video', 20 );
-function wcevzw_woo_display_embed_video( $html ) {
-	?>
-<script type="text/javascript">
-		jQuery(window).load(function(){
-			jQuery( 'a.woocommerce-product-gallery__trigger' ).hide();
-		});
-</script>
-	<?php
+add_action( 'woocommerce_product_thumbnails', 'vroom_woo_display_embed_avatar', 20 );
+function vroom_woo_display_embed_avatar( $html ) {
 	global $woocommerce;
 	global $product;
 	$product_id = get_the_ID();
 	$product_thum_id = get_post_meta( $product_id, '_thumbnail_id', true );
 	$sizey_garment_id =  get_post_meta( $product_id, 'sizey-garment-id', true );
-	//$sizey_garment_id = 'Kd9sjkEMhpQ88cjkVbap';
 	$attachment_ids = array();
 	$attachment_ids = $product->get_gallery_image_ids();
 	if ( !empty($sizey_garment_id)) {
@@ -58,6 +50,9 @@ function wcevzw_woo_display_embed_video( $html ) {
 		$avatar_poses = ( get_post_meta($product_id, 'avatars_poses', true) ) ? get_post_meta($product_id, 'avatars_poses', true) : 'Adam_m_Arms Down 2';
 		?>
 <script>
+	jQuery(window).load(function(){
+			jQuery( 'a.woocommerce-product-gallery__trigger' ).hide();
+		});
 	var loaded = false;
 	const changeAvatarAction = (id) => ({
 			action: "CHANGE_AVATAR",
@@ -71,16 +66,13 @@ jQuery(window).on('load', function () {
 
 	let modelid = sessionStorage.getItem('model-id');
 
-	let avatars_poses = 'default';
-
 	 jQuery(".woocommerce-product-gallery__image").click(()=>{
 
 		setTimeout(()=> {
 			if(modelid) {
 				document.getElementById("vroom_iframe1").contentWindow.postMessage(
 					changeAvatarAction(
-						modelid,
-						avatars_poses
+						modelid
 					),
 					"*"
 				);

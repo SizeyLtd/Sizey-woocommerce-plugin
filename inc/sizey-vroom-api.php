@@ -43,6 +43,32 @@ function get_sizey_vroom_garment_data() {
 
 	return $garments_data_to_return;
 }
+
+function get_all_garment_specific_sizes() {
+	$url = 'https://vroom-api.sizey.ai/garments/';
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_HTTPGET, 1);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	$results = curl_exec($ch);
+	curl_close($ch);
+	$garments_data = array();
+	$garments_data_to_return = array();
+	if ($results) {
+		$garments_data = json_decode($results, true);
+	}
+	$garment_specific_size =array();
+	foreach ($garments_data as $garment_data) {
+			$garmentSpecificSizes = $garment_data['sizes'];
+		if (isset($garmentSpecificSizes) && count($garmentSpecificSizes) > 0) {
+			foreach ($garmentSpecificSizes as $individualGarmentSpecificSize) {
+				$garment_specific_size[] = $individualGarmentSpecificSize['id'] . '-:-' . $individualGarmentSpecificSize['name'];
+			}
+		}
+	}
+	return array_unique($garment_specific_size);
+}
 /*
  * Get Photo URL and along with pose and path
  * */

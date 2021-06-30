@@ -306,7 +306,7 @@ function vroom_config_callback() {
  * @return null
  */
 function update_vroom_config() {
-
+	//First Tab Content VRoom configuration
 	if ( isset($_POST['vroom-sizey-button-configuration'])) {
 		if (
 			! isset( $_POST['vroom-config-nonce-field'] )
@@ -363,7 +363,7 @@ function update_vroom_config() {
 
 
 	}
-
+	//Second Tab content Global Size Attribute updation
 	if ( isset( $_POST['vroom-global-size-attribute-submit'] ) ) {
 		if (
 			! isset( $_POST['vroom-boutique-attribute-define-nonce-field'] )
@@ -377,7 +377,7 @@ function update_vroom_config() {
 		);
 	}
 
-	//Individual Sizey Attributes mapping
+	//Second Tab Individual Sizey Attributes mapping
 	if (isset($_POST['vroom-individual-attribute-mapping'])) {
 		if (
 			! isset( $_POST['vroom-sizey-size-specific-attribute-mapping-nonce-field'] )
@@ -411,13 +411,13 @@ function update_vroom_config() {
                   </div>';
 		}
 	}
-
+	//Second Tab Global Sizey Attribute mapping
 	if (isset($_POST['vroom-global-attribute-mapping'])) {
 		if (
 			! isset( $_POST['vroom-boutique-attribute-sizey-global-mapping-nonce-field'] )
 			|| ! wp_verify_nonce( sanitize_text_field($_POST['vroom-boutique-attribute-sizey-global-mapping-nonce-field']), 'vroom-boutique-attribute-sizey-global-mapping-action' )
 		) {
-			die('custom stop');
+
 			return false;
 		}
 
@@ -450,7 +450,7 @@ function update_vroom_config() {
             </div>';
 	}
 
-	//Done
+	//Second Tab Load individual sizey content
 	if (isset($_POST['redirect-url'])) {
 		if (
 			! isset( $_POST['boutique-attribute-redirect-url-nonce-field'] )
@@ -468,7 +468,7 @@ function update_vroom_config() {
 		}
 	}
 
-	//Done
+	//Second Tab content Individual sizey reset
 	if (isset($_POST['vroom-sizey-attribute-reset'])) {
 		if (
 			! isset( $_POST['vroom-sizey-size-specific-attribute-mapping-nonce-field'] )
@@ -484,6 +484,51 @@ function update_vroom_config() {
 		}
 
 	}
+
+	//Third Tab Garment mapping with sizey
+
+	if (isset($_POST['vroom-sizey-mapping-garment'])) {
+		if (
+			! isset( $_POST['vroom-sizey-mapping-garment-nonce-field'] )
+			|| ! wp_verify_nonce( sanitize_text_field($_POST['vroom-sizey-mapping-garment-nonce-field']), 'vroom-sizey-mapping-garment-action' )
+		) {
+
+			return false;
+		}
+
+		$boutique_attributes =array();
+		$count_data = 0;
+		if (isset($_POST['garment_attribute'])) {
+			$count_data = count($_POST['garment_attribute']);
+		}
+
+		for ($i=0; $i<$count_data; $i++) {
+			if (isset($_POST['garment_attribute'][$i])) {
+				$boutique_attributes[$i] = sanitize_text_field($_POST['garment_attribute'][$i]);
+			}
+		}
+		$arrayToStore = array();
+		foreach ($boutique_attributes as $boutique_size) {
+			$arrayToStore[$boutique_size] = array();
+			if (isset($_POST['garment-sizey-' . $boutique_size])) {
+				$global_sizey_count = count($_POST['garment-sizey-' . $boutique_size]);
+				for ($i=0; $i < $global_sizey_count; $i++) {
+					if (isset($_POST['garment-sizey-' . $boutique_size][$i])) {
+						$arrayToStore[$boutique_size][$i] = htmlspecialchars(sanitize_text_field($_POST['garment-sizey-' . $boutique_size][$i]));
+					}
+				}
+			} else {
+				$arrayToStore[$boutique_size] = [];
+			}
+
+		}
+
+		update_option('vroom-sizey-mapping-with-garment', json_encode($arrayToStore));
+		echo '<div class="notice notice-success is-dismissible">
+                <p>Success! Garment mapping with Sizey have been saved.</p>
+            </div>';
+	}
+
 	return null;
 }
 
@@ -494,6 +539,8 @@ function generate_vroom_config_form() {
 <ul id="vroom-sizey-tabs">
     <li><a href="#" name="vroomsizeytab1" >Sizey setting</a></li>
 	<li><a href="#" name="vroomsizeytab2" >Store wide size mapping</a></li>
+	<li><a href="#" name="vroomsizeytab3" >Sizey vs Garment</a></li>
+
 </ul>
 <div id="vroom-sizey-content">
     <div id="vroomsizeytab1">';
@@ -505,6 +552,11 @@ function generate_vroom_config_form() {
 	echo '<div id="vroomsizeytab2">';
 	if (file_exists(VROOM_PLUGIN_PATH . 'inc/admin/sizey-vroom-global-configuration.php')) {
 		require_once VROOM_PLUGIN_PATH . 'inc/admin/sizey-vroom-global-configuration.php';
+	}
+	echo '</div>';
+	echo '<div id="vroomsizeytab3">';
+	if (file_exists(VROOM_PLUGIN_PATH . 'inc/admin/sizey-size-mapping-with-garment-size.php')) {
+		require_once VROOM_PLUGIN_PATH . 'inc/admin/sizey-size-mapping-with-garment-size.php';
 	}
 	echo '</div>';
 	echo '</div></div>';
@@ -553,6 +605,50 @@ function vroom_generate_global_sizey_mapping( $boutique_size) {
 	echo wp_kses( $selectData, $allowed_html );
 
 }
+
+/**
+ * Dropdrown creation of the sizey mapping with garments
+ */
+
+function vroom_generate_global_sizey_mapping_for_garments( $garment_size) {
+	$mapped_attribute = array();
+	$global_sizey_mapping = json_decode(get_option('vroom-sizey-mapping-with-garment'), true);
+	if (isset($global_sizey_mapping[$garment_size])) {
+		$mapped_attribute = $global_sizey_mapping[$garment_size];
+	}
+
+	$mapped_attribute_count = count($mapped_attribute);
+	for ($counter =0; $counter < $mapped_attribute_count; $counter++) {
+		$mapped_attribute[$counter] = $mapped_attribute[$counter];
+	}
+	$sizeySizesData = getVroomGlobalSizeyConfiguration();
+
+	$selectData = '<select name="garment-sizey-' . $garment_size . '[]" id="garment-sizey"
+                    class="sizey-global-configuration" multiple="multiple">';
+	foreach ($sizeySizesData as $sizes) {
+		$selectData .='<option ';
+		if (in_array($sizes, $mapped_attribute)) {
+			$selectData .= ' selected="selected"';
+		}
+		$selectData .= ' value="' . $sizes . '">' . $sizes . '</option>';
+	}
+	$selectData .= '</select>';
+	$allowed_html = array(
+		'select'      => array(
+			'name'  => array(),
+			'id' => array(),
+			'class' => array(),
+			'multiple' => array()
+		),
+		'option'     => array(
+			'value' => array(),
+			'selected' => array()
+		)
+	);
+	echo wp_kses( $selectData, $allowed_html );
+
+}
+
 
 function get_vroom_global_mapping_by_boutique( $boutique_attribute ) {
 	$global_sizey_mapping = json_decode(get_option('vroom-global-sizey-mapping'), true);
