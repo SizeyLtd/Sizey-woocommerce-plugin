@@ -3,7 +3,7 @@
  * Plugin Name: Sizey vroom integration
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 0.0.4
+ * Version: 0.0.5
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -18,7 +18,7 @@ if ( !defined( 'VROOM_PLUGIN_URL' ) ) {
 	define( 'VROOM_PLUGIN_URL', plugin_dir_url( __FILE__ ) ); // Plugin url
 }
 if ( !defined( 'VROOM_VERSION' ) ) {
-	define( 'VROOM_VERSION', '0.0.4' ); // Version of plugin
+	define( 'VROOM_VERSION', '0.0.5' ); // Version of plugin
 }
 
 if ( !defined( 'VROOM_PLUGIN_PATH' ) ) {
