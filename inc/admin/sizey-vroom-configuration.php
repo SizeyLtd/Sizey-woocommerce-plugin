@@ -72,13 +72,7 @@ $previous_sizey_button_position = get_option('vroom-sizey-button-position');
 					<td><label for="name">Recommendation button text</label>
 						<input required type="text" id="vroom-sizey-recommendation-button-add-to-cart"
 							   name="vroom-sizey-recommendation-button-add-to-cart"
-							   value="
-							   <?php 
-								if (isset($vroom_recommendation_add_to_cart)) {
-									echo esc_html($vroom_recommendation_add_to_cart);
-								}  
-								?>
-							   " />
+							   value="<?php echo esc_html($vroom_recommendation_add_to_cart); ?>" />
 					</td>
 				</tr>
 
