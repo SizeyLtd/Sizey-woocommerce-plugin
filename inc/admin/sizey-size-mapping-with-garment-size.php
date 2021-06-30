@@ -4,7 +4,7 @@ if (! defined('WPINC')) {
 	die;
 }
 /*
- * Sizey Admin Configuration tab 2 content
+ * Sizey Admin Configuration tab 3 content
  * */
 $attributes = wc_get_attribute_taxonomies();
 $allAttributes = array();

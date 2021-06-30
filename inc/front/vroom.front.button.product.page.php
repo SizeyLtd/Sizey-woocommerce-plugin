@@ -28,7 +28,7 @@ if (get_option('sizey-button-type') === 'button') {
 	$sizeypopupclass =' ';
 }
 
-// echo '<span id="sizeyVroomRecommendedButton">';
+ echo '<span id="sizeyVroomRecommendedButton">';
 if (!$session_data['product_' . $productID]) { ?>
 	<!--<a href="#" id="SizeyVroomButton"
 	   style="<?php echo esc_html(get_option('sizey-css')); ?>"
@@ -63,13 +63,13 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 					} else {
 						data_to_show = data.content;
 					}
-					jQuery("#sizeyRecommendedButton").html(data_to_show);
+					jQuery("#sizeyVroomRecommendedButton").html(data_to_show);
 				}
 			});
 		}
 		jQuery(document).ready(function () {
-			if (sessionStorage.getItem('sizey-recommendation_'+<?php echo esc_html($productID); ?>)) {
-				call_realtime_vroom_button(sessionStorage.getItem('unique-id'), sessionStorage.getItem('sizey-recommendation_'+<?php echo esc_html($productID); ?>), product_id=<?php echo esc_html($productID); ?>);
+			if (sessionStorage.getItem('recommended_garment_size_'+<?php echo esc_html($productID); ?>) && sessionStorage.getItem('unique-id')) {
+				call_realtime_vroom_button(sessionStorage.getItem('unique-id'), sessionStorage.getItem('recommended_garment_size_<?php echo esc_html($productID); ?>'), <?php echo esc_html($productID); ?>);
 			}
 		});
 	</script>

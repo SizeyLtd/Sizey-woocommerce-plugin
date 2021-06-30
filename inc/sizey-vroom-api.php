@@ -23,6 +23,7 @@ function get_vroom_sizey_chart_data() {
 }
 
 
+
 function get_sizey_vroom_garment_data() {
 	$url = 'https://vroom-api.sizey.ai/SXiKCZZxGrtnpbykpp0J/garments';
 	$ch = curl_init();
@@ -63,7 +64,7 @@ function get_all_garment_specific_sizes() {
 			$garmentSpecificSizes = $garment_data['sizes'];
 		if (isset($garmentSpecificSizes) && count($garmentSpecificSizes) > 0) {
 			foreach ($garmentSpecificSizes as $individualGarmentSpecificSize) {
-				$garment_specific_size[] = $individualGarmentSpecificSize['id'] . '-:-' . $individualGarmentSpecificSize['name'];
+				$garment_specific_size[] = $individualGarmentSpecificSize['name'];
 			}
 		}
 	}

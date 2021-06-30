@@ -39,6 +39,7 @@ function vroom_woo_display_embed_avatar( $html ) {
 	global $woocommerce;
 	global $product;
 	$product_id = get_the_ID();
+	$sizey_id = get_post_meta($product_id, 'sizey-chart-id', true);
 	$product_thum_id = get_post_meta( $product_id, '_thumbnail_id', true );
 	$sizey_garment_id =  get_post_meta( $product_id, 'sizey-garment-id', true );
 	$attachment_ids = array();
@@ -191,6 +192,8 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 					$sizeypopupclass =' ';
 				}
 
+					$sizey_chart_specific_json = urlencode(get_sizey_specific_data($sizey_id));
+
 					$sizey_css = esc_html(get_option('sizey-css'));
 					$sizeypopupclass = esc_html($sizeypopupclass);
 					$vroom_sizey_api_key = esc_html( get_option('vroom-sizey-api-key'));
@@ -199,7 +202,7 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 					$anchorData = "<button id=&quot;SizeyVroomButton&quot;
 	                style=&quot;$sizey_css position:absolute; right: 30px; top: 50px;&quot;
 	                target=&quot;popup&quot; $sizeypopupclass
-                    onclick=&quot;openSizeyVroomPopup(&apos;$vroom_sizey_api_key&apos;, &apos;$product_id&apos;,&apos;$sizey_garment_id&apos;)&quot;>$button_name</button>";
+                    onclick=&quot;openSizeyVroomPopup(&apos;$vroom_sizey_api_key&apos;, &apos;$product_id&apos;,&apos;$sizey_garment_id&apos;,&apos;$sizey_chart_specific_json&apos;)&quot;>$button_name</button>";
 
 					$newhtml .= '<a href="#" data-type="video" rel="prettyPhoto[product-gallery]" data-type="video" data-video="<div class=&quot;wrapper&quot;><div style=&quot;position:relative;&quot;  class=&quot;video-wrapper&quot;>' . $anchorData . '<iframe width=&quot;1000&quot; height=&quot;640&quot; src=&quot;' . esc_url ( $video_link ) . '&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;true&quot; webkitallowfullscreen=&quot;true&quot; mozallowfullscreen=&quot;true&quot; id=&quot;vroom_iframe1&quot; ></iframe></div></div>" ><i class="fas fa-expand-arrows-alt fa-2x"  aria-hidden="true" style="top:10px; position:absolute; right:10px;"></i><iframe id="vroom_iframe"   class="woo-iframelist" width="" height="" src="' . esc_url( $video_link ) . '" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" scrolling="no" ></iframe></a>';
 			} else {

@@ -3,7 +3,7 @@
  * Plugin Name: Sizey vroom integration
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 0.0.5
+ * Version: 0.0.6
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -18,7 +18,7 @@ if ( !defined( 'VROOM_PLUGIN_URL' ) ) {
 	define( 'VROOM_PLUGIN_URL', plugin_dir_url( __FILE__ ) ); // Plugin url
 }
 if ( !defined( 'VROOM_VERSION' ) ) {
-	define( 'VROOM_VERSION', '0.0.5' ); // Version of plugin
+	define( 'VROOM_VERSION', '0.0.6' ); // Version of plugin
 }
 
 if ( !defined( 'VROOM_PLUGIN_PATH' ) ) {
@@ -690,25 +690,35 @@ require_once(VROOM_PLUGIN_PATH . '/inc/front/' . VROOM_PREFIX . '.front.button.p
 function generate_vroom_recommendation_add_to_cart_button() {
 	check_ajax_referer( 'recommendation_add_to_cart_button', 'nonce_data' );
 	$jsontoreturn = array();
+
 	if (isset($_POST['post_id']) && isset($_POST['unique_id'])) {
 		global $sizeychdata;
 		$post_id = sanitize_text_field($_POST['post_id']);
 		if ( isset($_POST['unique_id'])) {
 			$unique_id = sanitize_text_field($_POST['unique_id']);
 		}
-		$sizey_size_unavailable_message = get_option('sizey-unavailable-message');
-		if (isset($_POST['sizey_recommendation'])) {
-			$sizey_recommendation = json_decode(stripslashes(sanitize_text_field($_POST['sizey_recommendation'])), true);
+		if ( isset($_POST['sizey_recommendation'])) {
+			$garment_recommendation_data = sanitize_text_field($_POST['sizey_recommendation']);
 		}
-		$sizey_recommendation_add_to_cart_button = get_option('sizey-recommendation-button-add-to-cart');
+		$global_garment_data = json_decode(get_option('vroom-sizey-mapping-with-garment'), true);
+		//here the sizeychart data relate to sizey is retrieved
+		$garment_specific_data = $global_garment_data[$garment_recommendation_data];
+		for ($i = 0; $i < count($garment_specific_data); $i++) {
+			$garment_specific_data[$i] = strtolower($garment_specific_data[$i]);
+		}
+		$sizey_size_unavailable_message = get_option('vroom-sizey-unavailable-message');
+
+		// if (isset($_POST['sizey_recommendation'])) {
+		// 	$sizey_recommendation = json_decode(stripslashes(sanitize_text_field($_POST['sizey_recommendation'])), true);
+		// }
+		$sizey_recommendation_add_to_cart_button = get_option('vroom-sizey-recommendation-button-add-to-cart');
 		$cart_id = WC()->session->get('new_cart');
 		$earlier_session_data = WC()->session->get(WC()->session->get('new_cart'));
 		$variable_to_set_session = array();
 		$variable_to_set_session['unique_id'] = $unique_id;
-		$variable_to_set_session['product_' . $post_id]['sizey_recommendation'] = $sizey_recommendation;
-		$variable_to_set_session['product_' . $post_id]['available_sizes'] = $sizey_recommendation;
+		//$variable_to_set_session['product_' . $post_id]['available_sizes'] = $sizey_recommendation;
 		$individual_size_chart_id = get_post_meta($post_id, 'sizey-chart-id', true); // Validate if any sizechart is mapped
-		$global_size_attribute = 'pa_' . get_option('global-size-attributes'); //pa_size
+		$global_size_attribute = 'pa_' . get_option('vroom-global-size-attributes'); //pa_size
 		//Validate size chart id from main list
 		foreach ($sizeychdata as $individual_chart_data) {
 			$size_charts[] = $individual_chart_data['id'];
@@ -729,6 +739,7 @@ function generate_vroom_recommendation_add_to_cart_button() {
 		}
 		$size_mapping_data = get_option($individual_size_chart_id); // Get individual sizey id mapped with boutique sizes
 		if (!$size_mapping_data) {
+
 			$size_mapping_data = get_option('vroom-global-sizey-mapping');
 			if (!isset($size_mapping_data)) {
 				$jsontoreturn['status'] = 'success';
@@ -745,14 +756,17 @@ function generate_vroom_recommendation_add_to_cart_button() {
 				$escaped_size_mapping_data[strtolower(htmlspecialchars(sanitize_text_field( $size_value)))] = $key;
 			}
 		}
+		//sizechart mapping data
 
 		global $product;
-		$product_specific_size_attributes = wc_get_product_terms( $post_id, 'pa_' . get_option('global-size-attributes') ) ;
+		$product_specific_size_attributes = wc_get_product_terms( $post_id, 'pa_' . get_option('vroom-global-size-attributes') ) ;
 		foreach ($product_specific_size_attributes as $individual_attribute) {
 			$size_slug[strtolower($individual_attribute->slug)] = strtolower($individual_attribute->slug);
 		}
-		$recommendedsize =  strtolower(htmlspecialchars(sanitize_text_field($sizey_recommendation['size'])));
+
+		$recommendedsize =  $garment_specific_data[0];
 		//Validate if the suggested size is available for a specific product
+
 		if ( isset($escaped_size_mapping_data[$recommendedsize]) && in_array( strtolower($escaped_size_mapping_data[ $recommendedsize ]), $size_slug ) ) {
 			$individual_product_to_generate_url = wc_get_product($post_id);
 			$product_specific_variations = $individual_product_to_generate_url->get_available_variations();
@@ -869,4 +883,23 @@ function generate_vroom_sizey_specific_boutique_dropdown_mapping( $sizey_details
 		)
 	);
 	echo wp_kses( $selectbox, $allowed_html );
+}
+
+
+function get_sizey_specific_data( $sizey_id = null) {
+	global $sizeychdata;
+	$individual_sizey_data = array();
+
+	foreach ($sizeychdata as $individual_sizey_ch_data) {
+		$individual_sizey_data[$individual_sizey_ch_data['id']]['brand'] = $individual_sizey_ch_data['brand'];
+		$individual_sizey_data[$individual_sizey_ch_data['id']]['gender'] = $individual_sizey_ch_data['gender'];
+		$individual_sizey_data[$individual_sizey_ch_data['id']]['garment'] = $individual_sizey_ch_data['garment'];
+		$individual_sizey_data[$individual_sizey_ch_data['id']]['extra'] = $individual_sizey_ch_data['extra']?$individual_sizey_ch_data['extra']:null;
+		$individual_sizey_data[$individual_sizey_ch_data['id']]['sizeType'] = null;
+	}
+	if (is_null($sizey_id)) {
+		return json_encode($individual_sizey_data);
+	}
+	return json_encode($individual_sizey_data[$sizey_id]);
+
 }
