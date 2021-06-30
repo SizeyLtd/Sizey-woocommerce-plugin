@@ -1,7 +1,6 @@
 function openSizeyVroomPopup(sizey_api_key='',  product_id, garment_id, sizey_data)
 {
-    console.log("hi");
-    console.log(decodeURIComponent(sizey_data));
+
     sizey_data = JSON.parse(decodeURIComponent(sizey_data));
     sizey_api_key = sizey_api_key.trim();
     product_id = product_id.trim();
