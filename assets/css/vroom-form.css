@@ -1,0 +1,169 @@
+.data-table{
+     width:49%;
+     float: left;
+     margin-right: 1%;
+ }
+
+ .data-table .stuffbox h2 {
+  padding: 8px 10px;
+  margin: 0;
+}
+.data-table .stuffbox label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+.table tr:nth-child(even) {
+  background-color: #dddddd;
+}
+.table textarea{
+    width:96%;
+    resize:none;
+
+}
+.table input{
+    width:96%;
+    resize:none;
+
+}
+.table select{
+    width:96%;
+}
+#vroom-sizey-api-key {
+    width: 96%;
+}
+#namediv.stuffbox .editcomment select {
+  width: 100%;
+  max-width: 100%;
+}
+#namediv.stuffbox .editcomment textarea {
+  width: 100%;
+}
+.content{
+  padding: 10px;
+}
+.error-highlight {
+    border-color: #ff0000 !important;
+    box-shadow: 0 0 10px #ff0000 !important;
+    outline: 0 !important;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6) !important;
+    box-shadow: inset 0 1px 1px #ff0000, 0 0 8px #ff0000 !important;
+}
+.success-highlight {
+    border-color: green !important;
+    outline: 0 !important;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6) !important;
+    box-shadow: inset 0 1px 1px green, 0 0 8px green !important;
+}
+#sizey-css {
+  resize: none !important;
+}
+
+.global-dropdown {
+  width: 100% !important;
+  max-width: 78% !important;
+  margin-bottom: 15px;
+  float: left;
+  margin-right: 8px;
+}
+.global-button{
+width: 20% !important;
+padding: 4px !important;
+}
+.select2-container{
+  width:100% !important;
+}
+.text-right {
+  float: right;
+}
+.mr-10{
+  margin-right: 10px !important;
+}
+.mt-10{
+  margin-top: 10px !important;
+}
+.wp-core-ui select {
+  margin-top: 5px;
+}
+.data-table .stuffbox{
+  min-height: 430px;
+}
+
+/*for tabs*/
+#current a {
+  color: #000 !important;
+}
+#vroom-sizey-tabs {
+  overflow: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#vroom-sizey-tabs li {
+  float: left;
+  margin: 0 .5em 0 0;
+}
+
+#vroom-sizey-tabs a {
+    position: relative;
+    background: #2271b1;
+    padding: .7em 3em;
+    float: left;
+    text-decoration: none;
+    color: #fff;
+    text-shadow: 0 1px 0 rgb(255 255 255 / 80%);
+    border-radius: 5px 0 0 0;
+    box-shadow: 0 2px 2px rgb(0 0 0 / 40%);
+}
+
+
+#vroom-sizey-tabs a:focus {
+  outline: 0;
+}
+
+#vroom-sizey-tabs a::after {
+  content:'';
+  position:absolute;
+  z-index: 1;
+  top: 0;
+  right: -.5em;
+  bottom: 0;
+  width: 1em;
+  background: #2271b1;
+  box-shadow: 2px 2px 2px rgba(0,0,0,.4);
+
+  border-radius: 0 5px 0 0;
+}
+
+#vroom-sizey-tabs #current a,
+#vroom-sizey-tabs #current a::after {
+  background: #fff;
+  z-index: 3;
+}
+
+#vroom-sizey-content {
+  background: #fff;
+  padding: 2em;
+  position: relative;
+  z-index: 2;
+  border-radius: 0 5px 5px 5px;
+  box-shadow: 0 -2px 3px -2px rgba(0, 0, 0, .5);
+}
+
+.select2-selection__clear {
+    font-size: large !important;
+}

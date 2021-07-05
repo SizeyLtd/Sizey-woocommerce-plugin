@@ -1,0 +1,25 @@
+*** Sizey vroom recommendation Changelog ***
+2021-07-01 - version 0.0.6
+    * Recommendation button generation
+    * reccommendation analytics api integration
+
+2021-06-30 - version 0.0.5
+    * Mapping of the sizey sizes with garment sizes
+    * reccommendation analytics api integration
+
+2021-06-28 - version 0.0.4
+    * Configuration management required for the recommendation
+    * Code Optimization
+
+2021-06-25 - version 0.0.3
+
+    * Dynamic avatar loading according to the measurement generation
+    * Code Optimization as per the Woocommerce standards
+
+2021-06-21 - version 0.0.2
+    * make some things dynamic
+    * Move Recommendation button to full screen iframe
+
+2021-06-17 - version 0.0.1
+
+* Initial release
