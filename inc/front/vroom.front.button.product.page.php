@@ -28,19 +28,7 @@ if (get_option('sizey-button-type') === 'button') {
 	$sizeypopupclass =' ';
 }
 
- echo '<span id="sizeyVroomRecommendedButton">';
-if (!$session_data['product_' . $productID]) { ?>
-	<!--<a href="#" id="SizeyVroomButton"
-	   style="<?php echo esc_html(get_option('sizey-css')); ?>"
-	   target="popup"  <?php echo esc_html($sizeypopupclass); ?>
-	   onclick="openSizeyVroomPopup('<?php echo esc_html($vroom_sizey_api_key); ?>', <?php echo esc_html($productID); ?>); return false;">
-		<?php echo esc_html(get_option('sizey-button')); ?>
-	</a>-->
-<?php } else { ?>
-	<script>//sessionStorage.setItem('sizey-recommendation_'+<?php echo esc_html($productID); ?>, JSON.stringify(<?php echo json_encode($session_data['product_' . $productID]['sizey_recommendation']); ?>))</script>
-	<?php
-}
-echo '</span>';
+ echo '<span id="sizeyVroomRecommendedButton"></span>';
 /* Create Nonce */
 $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 ?>
@@ -64,6 +52,7 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 						data_to_show = data.content;
 					}
 					jQuery("#sizeyVroomRecommendedButton").html(data_to_show);
+                    jQuery("#sizeyVroomRecommendationResult").html(data_to_show);
 				}
 			});
 		}
