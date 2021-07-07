@@ -698,7 +698,7 @@ function generate_vroom_recommendation_add_to_cart_button() {
 			$unique_id = sanitize_text_field($_POST['unique_id']);
 		}
 		if ( isset($_POST['sizey_recommendation'])) {
-			$garment_recommendation_data = sanitize_text_field($_POST['sizey_recommendation']);
+			echo $garment_recommendation_data = sanitize_text_field($_POST['sizey_recommendation']);
 		}
 		$global_garment_data = json_decode(get_option('vroom-sizey-mapping-with-garment'), true);
 		//here the sizeychart data relate to sizey is retrieved
@@ -706,11 +706,8 @@ function generate_vroom_recommendation_add_to_cart_button() {
 		for ($i = 0; $i < count($garment_specific_data); $i++) {
 			$garment_specific_data[$i] = strtolower($garment_specific_data[$i]);
 		}
-		$sizey_size_unavailable_message = get_option('vroom-sizey-unavailable-message');
 
-		// if (isset($_POST['sizey_recommendation'])) {
-		// 	$sizey_recommendation = json_decode(stripslashes(sanitize_text_field($_POST['sizey_recommendation'])), true);
-		// }
+		$sizey_size_unavailable_message = get_option('vroom-sizey-unavailable-message');
 		$sizey_recommendation_add_to_cart_button = get_option('vroom-sizey-recommendation-button-add-to-cart');
 		$cart_id = WC()->session->get('new_cart');
 		$earlier_session_data = WC()->session->get(WC()->session->get('new_cart'));
