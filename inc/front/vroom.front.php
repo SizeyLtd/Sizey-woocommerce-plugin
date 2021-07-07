@@ -199,7 +199,7 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 					$vroom_sizey_api_key = esc_html( get_option('vroom-sizey-api-key'));
 					$product_id= esc_html($product_id);
 					$button_name = esc_html(get_option('sizey-button'));
-					$anchorData = "<button id=&quot;SizeyVroomButton&quot;
+					$anchorData = "<span style=&quot;position:absolute; right: 60px; top: 50px;&quot; id=&quot;sizeyVroomRecommendationResult&quot;></span><button id=&quot;SizeyVroomButton&quot;
 	                style=&quot;$sizey_css position:absolute; right: 30px; top: 50px;&quot;
 	                target=&quot;popup&quot; $sizeypopupclass
                     onclick=&quot;openSizeyVroomPopup(&apos;$vroom_sizey_api_key&apos;, &apos;$product_id&apos;,&apos;$sizey_garment_id&apos;,&apos;$sizey_chart_specific_json&apos;)&quot;>$button_name</button>";
