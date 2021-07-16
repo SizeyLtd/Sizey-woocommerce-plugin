@@ -1,11 +1,10 @@
 function openSizeyVroomPopup(sizey_api_key='',  product_id, garment_id, sizey_data)
 {
-
     sizey_data = JSON.parse(decodeURIComponent(sizey_data));
     sizey_api_key = sizey_api_key.trim();
     product_id = product_id.trim();
     sessionStorage.setItem( 'sizey-product-id', product_id );
-    let unique_id = generateuuid();
+    let unique_id = uuidv4();
     if (!sessionStorage.getItem('unique-id')) {
         sessionStorage.setItem('unique-id', unique_id )
     }
@@ -49,9 +48,9 @@ const changeAvatarActionUsingJs = (id) => ({
     action: "CHANGE_AVATAR",
     payload: { id },
 });
-const changeGarmentActionUsingJs = (id, avatar) => ({
+const changeGarmentActionUsingJs = (id) => ({
 action: "CHANGE_GARMENT",
-payload: {id, avatar}
+payload: {id}
 });
 function loadModelinIframeUsingMainJs(garment_id) {
 		let model_id = sessionStorage.getItem('model-id');
@@ -61,56 +60,68 @@ function loadModelinIframeUsingMainJs(garment_id) {
 			document.getElementById("vroom_iframe").contentWindow.postMessage(
                 changeAvatarActionUsingJs(
                     model_id,
-
                 ),
                 "*"
             );
 			document.getElementById("vroom_iframe").contentWindow.postMessage(
                 changeGarmentActionUsingJs(
-                    garment_id,
-                    model_id
+                    garment_id
                 ),
                 "*"
             );
 
 }
 
+function openRecommendationPopup(apikey, chartId, productId) {
+    const storedMeasurementId = sessionStorage.getItem("sizey-measurement-id");
+    let url = "https://recommendation.sizey.ai/?apikey=" + apikey + "&chartId=" + chartId + "&measurementId=" +
+        storedMeasurementId;
+    let wnd = window.open(url, 'popup', 'width=800,height=800,scrollbars=yes,resizable=yes');
+    window.onmessage = function (e) {
+        let sizeyEvent = e.data;
+        if (sizeyEvent.event === "sizey-recommendation") {
+            let sizeyRecommendation = sizeyEvent.recommendation;
+            let unique_id = uuidv4();
+            if (!sessionStorage.getItem('unique-id')) {
+                sessionStorage.setItem('unique-id', unique_id )
+            }
 
-function openSizeyPopupViaVroom(sizey_api_key='', chartId='', product_id)
+            if(!sessionStorage.getItem("sizey-recommendation_" + productId)) {
+                sessionStorage.setItem("sizey-recommendation_" + productId, JSON.stringify(sizeyRecommendation) )
+            }
+
+            let jsonData={
+                "sessionId": sessionStorage.getItem('unique-id'),
+                "productId":  productId,
+                "measurementId": sessionStorage.getItem('sizey-measurement-id')
+            }
+            callRecommendationAPIForVroom("https://analytics-api-dot-sizey-ai.appspot.com/recommendation", jsonData, apikey);
+            //call_realtime_button(unique_id, JSON.stringify(sizeyRecommendation));
+        }
+        if (sizeyEvent.event === 'sizey-measurements') {
+            let sizey_measurement_id = sizeyEvent.measurements;
+            sessionStorage.setItem('sizey-measurement-id', sizey_measurement_id.measurementId );
+        }
+
+
+    };
+
+}
+
+
+function openSizeyPopupViaVroom(sizey_api_key='', garmentId='', product_id)
 {
-    if (sizey_api_key!=='' && chartId!=='') {
-        const storedMeasurementId = sessionStorage.getItem("sizey-measurement-id");
-        let url = "https://recommendation.sizey.ai/?apikey=" + sizey_api_key + "&chartId=" + chartId + "&measurementId=" +
-            storedMeasurementId;
-        let wnd = window.open(url, 'popup', 'width=800,height=800,scrollbars=yes,resizable=yes');
-        window.onmessage = function (e) {
-            let sizeyEvent = e.data;
-            if (sizeyEvent.event === "sizey-recommendation") {
-                let sizeyRecommendation = sizeyEvent.recommendation;
-                let unique_id = generateuuid();
-                if (!sessionStorage.getItem('unique-id')) {
-                    sessionStorage.setItem('unique-id', unique_id )
-                }
+    if (sizey_api_key!=='' && garmentId!=='') {
 
-                if(!sessionStorage.getItem("sizey-recommendation_" + product_id)) {
-                    sessionStorage.setItem("sizey-recommendation_" + product_id, JSON.stringify(sizeyRecommendation) )
-                }
+        fetch('https://vroom-api.sizey.ai/garments/' + garmentId).then(o => o.json()).then(garment => {
+            if(!garment.sizeChartId) {
+                // show some error?
 
-                let jsonData={
-                    "sessionId": sessionStorage.getItem('unique-id'),
-                    "productId":  product_id,
-                    "measurementId": sessionStorage.getItem('sizey-measurement-id')
-                }
-                callRecommendationAPIForVroom("https://analytics-api-dot-sizey-ai.appspot.com/recommendation", jsonData, sizey_api_key);
-                //call_realtime_button(unique_id, JSON.stringify(sizeyRecommendation));
+            } else {
+                openRecommendationPopup(sizey_api_key, garment.sizeChartId, product_id);
+
             }
-            if (sizeyEvent.event === 'sizey-measurements') {
-                let sizey_measurement_id = sizeyEvent.measurements;
-                sessionStorage.setItem('sizey-measurement-id', sizey_measurement_id.measurementId );
-            }
-
-
-        };
+        })
     }
 }
 

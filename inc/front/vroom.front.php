@@ -59,9 +59,9 @@ function vroom_woo_display_embed_avatar( $html ) {
 			action: "CHANGE_AVATAR",
 			payload: { id },
 		});
-		const changeGarmentAction = (id, avatar) => ({
+		const changeGarmentAction = (id,) => ({
 		action: "CHANGE_GARMENT",
-		payload: {id, avatar}
+		payload: {id}
 	  });
 jQuery(window).on('load', function () {
 
@@ -80,8 +80,7 @@ jQuery(window).on('load', function () {
 			}
 			document.getElementById("vroom_iframe1").contentWindow.postMessage(
 				changeGarmentAction(
-					"<?php echo esc_html($sizey_garment_id); ?>",
-					modelid
+					"<?php echo esc_html($sizey_garment_id); ?>"
 				),
 				"*"
 			);
@@ -137,7 +136,12 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 			<?php
 	}
 
+	echo "EWEWERR";
+
+
 	$enable_lightbox = get_option( 'woocommerce_enable_lightbox' );
+
+	// var_dump($enable_lightbox);
 	if ( $attachment_ids ) {
 		$newhtml = '';
 		$loop       = 0;
