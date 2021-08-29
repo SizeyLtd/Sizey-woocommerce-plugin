@@ -13,9 +13,10 @@ jQuery(document).ready(function () {
 
 /**To generate the tab */
 jQuery(document).ready(function () {
-    jQuery("#vroom-sizey-content").find("[id^='vroomsizeytab']").hide(); // Hide all content
+    jQuery("#vroom-sizey-content").find("[id^='tab2']").hide(); // Hide all content
     jQuery("#vroom-sizey-tabs li:first").attr("id","current"); // Activate the first tab
     jQuery("#vroom-sizey-content #vroomsizeytab1").fadeIn(); // Show first tab's content
+    // jQuery("#vroom-sizey-content #tab2").fadeIn(); // Show first tab's content
 
     jQuery('#vroom-sizey-tabs a').click(function (e) {
         e.preventDefault();

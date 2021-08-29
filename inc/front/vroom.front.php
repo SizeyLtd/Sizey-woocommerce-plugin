@@ -27,8 +27,13 @@ function vroom_woo_scripts_styles() {
 add_action( 'template_redirect', 'vroom_remove_gallery_thumbnail_images' );
 function vroom_remove_gallery_thumbnail_images() {
 	if ( is_product() ) {
-		remove_action( 'woocommerce_product_thumbnails', 'woocommerce_show_product_thumbnails', 20 );
+		// remove_action( 'woocommerce_product_thumbnails', 'woocommerce_show_product_thumbnails', 20 );
 	}
+}
+
+add_action( 'woocommerce_before_single_product_summary', 'my_plugin_show_product_image', 10 ); 
+function my_plugin_show_product_image() {
+	// echo "WOHO";
 }
 
 /**
@@ -39,12 +44,12 @@ function vroom_woo_display_embed_avatar( $html ) {
 	global $woocommerce;
 	global $product;
 	$product_id = get_the_ID();
-	$sizey_id = get_post_meta($product_id, 'sizey-chart-id', true);
+	// $sizey_id = get_post_meta($product_id, 'sizey-chart-id', true);
 	$product_thum_id = get_post_meta( $product_id, '_thumbnail_id', true );
-	$sizey_garment_id =  get_post_meta( $product_id, 'sizey-garment-id', true );
+	// $sizey_garment_id =  get_post_meta( $product_id, 'sizey-garment-id', true );
 	$attachment_ids = array();
 	$attachment_ids = $product->get_gallery_image_ids();
-	if ( !empty($sizey_garment_id)) {
+	if ( true ) {
 		get_post_meta($product_id, 'sizey_gallery_image', true);
 		$attachment_ids[] = get_post_meta($product_id, 'sizey_gallery_image', true);
 		$avatars = ( get_post_meta($product_id, 'avatars', true) ) ? get_post_meta($product_id, 'avatars', true) : 'sizey_male_mid_normal_46';
@@ -64,7 +69,6 @@ function vroom_woo_display_embed_avatar( $html ) {
 		payload: {id}
 	  });
 jQuery(window).on('load', function () {
-
 	let modelid = sessionStorage.getItem('model-id');
 
 	 jQuery(".woocommerce-product-gallery__image").click(()=>{
@@ -80,7 +84,7 @@ jQuery(window).on('load', function () {
 			}
 			document.getElementById("vroom_iframe1").contentWindow.postMessage(
 				changeGarmentAction(
-					"<?php echo esc_html($sizey_garment_id); ?>"
+					"<?php echo esc_html($product_id); ?>"
 				),
 				"*"
 			);
@@ -106,8 +110,7 @@ function loadModelinIframe() {
 			);
 			document.getElementById("vroom_iframe").contentWindow.postMessage(
 				changeGarmentAction(
-					"<?php echo esc_html($sizey_garment_id); ?>",
-					model_id
+					"<?php echo esc_html($product_id); ?>"
 				),
 				"*"
 			);
@@ -136,11 +139,9 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 			<?php
 	}
 
-	echo "EWEWERR";
+	$enable_lightbox = get_option( ' ' );
 
-
-	$enable_lightbox = get_option( 'woocommerce_enable_lightbox' );
-
+	// var_dump("??#¤?¤#");
 	// var_dump($enable_lightbox);
 	if ( $attachment_ids ) {
 		$newhtml = '';

@@ -1,4 +1,8 @@
 *** Sizey vroom recommendation Changelog ***
+2021-08-12 - version 0.0.8
+    * Garments to products
+    * Cleanup
+
 2021-07-01 - version 0.0.6
     * Recommendation button generation
     * reccommendation analytics api integration

@@ -72,9 +72,9 @@ function loadModelinIframeUsingMainJs(garment_id) {
 
 }
 
-function openRecommendationPopup(apikey, chartId, productId) {
+function openRecommendationPopup(apikey, productId) {
     const storedMeasurementId = sessionStorage.getItem("sizey-measurement-id");
-    let url = "https://recommendation.sizey.ai/?apikey=" + apikey + "&chartId=" + chartId + "&measurementId=" +
+    let url = "https://recommendation.sizey.ai?apikey=" + apikey + "&productId=" + productId + "&measurementId=" +
         storedMeasurementId;
     let wnd = window.open(url, 'popup', 'width=800,height=800,scrollbars=yes,resizable=yes');
     window.onmessage = function (e) {
@@ -96,6 +96,9 @@ function openRecommendationPopup(apikey, chartId, productId) {
                 "measurementId": sessionStorage.getItem('sizey-measurement-id')
             }
             callRecommendationAPIForVroom("https://analytics-api-dot-sizey-ai.appspot.com/recommendation", jsonData, apikey);
+            console.log(sessionStorage.getItem('unique-id'), sessionStorage.getItem('recommended_garment_size_'+productId), productId);
+            call_realtime_vroom_button(unique_id, sizeyRecommendation, productId);
+
             //call_realtime_button(unique_id, JSON.stringify(sizeyRecommendation));
         }
         if (sizeyEvent.event === 'sizey-measurements') {
@@ -109,16 +112,15 @@ function openRecommendationPopup(apikey, chartId, productId) {
 }
 
 
-function openSizeyPopupViaVroom(sizey_api_key='', garmentId='', product_id)
+function openSizeyPopupViaVroom(sizey_api_key='', productId='', product_id)
 {
-    if (sizey_api_key!=='' && garmentId!=='') {
-
-        fetch('https://vroom-api.sizey.ai/garments/' + garmentId).then(o => o.json()).then(garment => {
-            if(!garment.sizeChartId) {
+    if (sizey_api_key!=='' && productId!=='') {
+        fetch('https://vroom-api.sizey.ai/products/' + productId, {headers: {'x-sizey-key': sizey_api_key}}).then(o => o.json()).then(product => {
+            if(!product.sizeChart?.id) {
                 // show some error?
 
             } else {
-                openRecommendationPopup(sizey_api_key, garment.sizeChartId, product_id);
+                openRecommendationPopup(sizey_api_key, productId);
 
             }
         })
