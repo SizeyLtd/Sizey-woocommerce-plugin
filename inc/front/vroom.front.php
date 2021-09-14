@@ -121,8 +121,8 @@ function loadModelinIframe() {
 
 }
 
-document.getElementById('iframeliid').onclick = loadModelinIframe;
-document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
+// document.getElementById('iframeliid').onclick = loadModelinIframe;
+// document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 //document.getElementById('iframeliid').addEventListener('click', loadModelinIframe)
 //document.getElementById('iframeliid').addEventListener('touchstart', loadModelinIframe);
 });
@@ -180,7 +180,7 @@ document.getElementById('iframeliid').ontouchstart= loadModelinIframe;
 			$image_title = esc_attr( get_the_title( $attachment_id ) );
 
 			if ( !empty( $sizey_garment_id ) && ( $loop+1 === $total_attachments )) {
-				$video_link = 'https://vroom.sizey.ai';
+				// $video_link = 'https://vroom.sizey.ai';
 			}
 			$video = '';
 			if ( !empty( $video_link ) ) {

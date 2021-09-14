@@ -3,7 +3,7 @@
  * Plugin Name: Sizey 
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 0.2.2
+ * Version: 1.0.0
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -18,7 +18,7 @@ if ( !defined( 'VROOM_PLUGIN_URL' ) ) {
 	define( 'VROOM_PLUGIN_URL', plugin_dir_url( __FILE__ ) ); // Plugin url
 }
 if ( !defined( 'VROOM_VERSION' ) ) {
-	define( 'VROOM_VERSION', '0.2.2' ); // Version of plugin
+	define( 'VROOM_VERSION', '1.0.0' ); // Version of plugin
 }
 
 if ( !defined( 'VROOM_PLUGIN_PATH' ) ) {
@@ -114,7 +114,7 @@ function vroom_configuration_page_registration() {
 	add_submenu_page(
 		'woocommerce',
 		'Sizey Vroom Configuration',
-		'Vroom',
+		'Sizey',
 		'manage_options',
 		'vroom-config',
 		'vroom_config_callback'
@@ -144,6 +144,7 @@ function update_vroom_config() {
 		$versions = array("WordPress" => WC_VERSION, "WooSizey" => 1 );
 	
 		while ($products_IDs->have_posts() ) : $products_IDs->the_post();
+	
 			$ch = curl_init();
 			// curl_setopt($ch, CURLOPT_HTTPGET, 1);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -155,14 +156,10 @@ function update_vroom_config() {
 			));
 
 			$product_s = wc_get_product( $products_IDs->post->ID ); 
-			// $variations = $product_s->get_available_variations();
+			if($product_s->is_type( 'simple' )) {
+				continue;
+			}
 			$attributes = $product_s->get_variation_attributes();
-
-			// var_dump($product_s);
-			// var_dump($variations);
-			// echo '<pre>' . var_export($product_s->get_variation_attributes(), true) . '</pre>';				
-
-			// $garment_id = get_post_meta( $products_IDs->post->ID, 'sizey-garment-id', true );			
 
 			$url = "https://vroom-api.sizey.ai/integration/woocommerce/product/" . $products_IDs->post->ID; //. "?" . $params;
 
@@ -172,32 +169,6 @@ function update_vroom_config() {
 
 			curl_setopt($ch, CURLOPT_URL, $url);
 			$result = curl_exec($ch);
-
-
-			// foreach ( $variations as $variation ) {
-
-			// 	// var_dump($variation);
-			// 	echo '<pre>' . var_export($variation, true) . '</pre>';				
-			// 	// $params = "";
-			// 	// foreach( array_keys($variation['attributes']) as $key) {
-			// 	// 	$params .=  preg_replace('/^attribute_pa_/', '', $key) . "=" . $variation['attributes'][$key] . "&";
-			// 	// }
-
-			// 	$url = "http://localhost:9001/integration/woocommerce/product/" . $products_IDs->post->ID; //. "?" . $params;
-
-
-			// 	$payload = json_encode( array( "meta" => $versions, "post" => $products_IDs->post, "variation" => $variation ) );
-			// 	curl_setopt( $ch, CURLOPT_POSTFIELDS, $payload );
-
-			// 	curl_setopt($ch, CURLOPT_URL, $url);
-			// 	$result = curl_exec($ch);
-			// 	curl_close($ch);
-			
-			// 	// var_dump(array_keys($variation['attributes']));
-			// 	// var_dump(array_reduce($variation["attributes"], 'variations2params'));
-			// }			
-			// echo '<pre>'; var_dump($variations); echo '</pre>';
-			// Your code
 		endwhile;		
 		curl_close($ch);
 	}
