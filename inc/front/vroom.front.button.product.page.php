@@ -128,11 +128,15 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 				iframe.style.margin = 0;
 				iframe.style.border = 'none';
 				// iframe.src = "https://vroom.sizey.ai/";
-				iframe.src = "http://localhost:3000//?apikey=<?php echo esc_html($vroom_sizey_api_key); ?>";
+				iframe.src = "http://localhost:3000/?apikey=<?php echo esc_html($vroom_sizey_api_key); ?>";
 
 				iframe.addEventListener('load', function() {
+					fetch('http://localhost:9000/my-avatar?measurementId=' + sessionStorage.getItem('sizey-measurement-id'), {headers: {'x-sizey-key': '<?php echo esc_html($vroom_sizey_api_key); ?>'}}).then(o => o.json()).then(avatar => {
+						console.log("Loading my avatar", avatar)
+						iframe.contentWindow.postMessage({action: "CHANGE_AVATAR",payload: { id: avatar.id, scale: 1 }}, "*");
+					});
 					setTimeout(function() {
-						iframe.contentWindow.postMessage({action: "CHANGE_AVATAR",payload: { id: 'f_sz_mid_n56', scale: 1 }}, "*");
+						// iframe.contentWindow.postMessage({action: "CHANGE_AVATAR",payload: { id: 'f_sz_mid_n56', scale: 1 }}, "*");
 						iframe.contentWindow.postMessage({action: "CHANGE_GARMENT", payload: { id: '<?php echo esc_html($productID); ?>', size: 'xl', colorway: '', scale: 1 }}, "*");
 					}, 1000);
 				}, true)
@@ -150,6 +154,7 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 				jQuery( ".single_variation_wrap" ).on( "show_variation", function ( event, variation ) {
 					// Fired when the user selects all the required dropdowns / attributes
 					// and a final variation is selected / shown
+					console.log("Loading size", variation.attributes.attribute_pa_size)
 					iframe.contentWindow.postMessage({action: "CHANGE_GARMENT", payload: { id: '<?php echo esc_html($productID); ?>', size: variation.attributes.attribute_pa_size, colorway: '', scale: 1 }}, "*");
 				} );	
 
