@@ -1,16 +1,3 @@
-jQuery(document).ready(function () {
-    jQuery(".sizey-garment-id").select2({
-        placeholder: {
-            id: '-1', // the value of the option
-            text: 'Select a garment'
-        },
-        allowClear: true
-    }).on('change', function (e) {
-        let data = jQuery(".sizey-garment-id option:selected").text();
-        jQuery("#sizey-garment-name").val(data);
-    });
-});
-
 /**To generate the tab */
 jQuery(document).ready(function () {
     jQuery("#vroom-sizey-content").find("[id^='tab2']").hide(); // Hide all content
@@ -64,23 +51,3 @@ function validateAPIKey(ele)
         }
     });
 }
-
-
-function validatevroomsizesumbit()
-{
-    if (window.confirm("Are you sure, you want to change the global store's size attribute")) {
-        document.getElementById('vroom-boutique-attribute').submit();
-    } else {
-        return false;
-    }
-}
-
-function submitvroomform()
-{
-    document.getElementById('vroom-sizey-dropdown').submit();
-}
-
-
-jQuery(document).ready(function () {
-    jQuery('.sizey-global-configuration').select2();
-});

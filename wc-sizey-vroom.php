@@ -30,21 +30,13 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'WC_vroom_plugin_
 add_action('admin_menu', 'vroom_configuration_page_registration', 99);
 add_action(get_option('vroom-sizey-button-position'), 'add_sizey_recommendation_button');
 
-if (file_exists(plugin_dir_path(__FILE__) . 'inc/sizey-vroom-api.php')) {
-	require_once plugin_dir_path(__FILE__) . 'inc/sizey-vroom-api.php';
-}
-$garment_data_from_api = get_sizey_vroom_garment_data();
 if (file_exists(plugin_dir_path(__FILE__) . 'inc/include-vroom-backend-file.php')) {
 	require_once plugin_dir_path(__FILE__) . 'inc/include-vroom-backend-file.php';
-}
-if (file_exists(plugin_dir_path(__FILE__) . 'inc/vroom-admin-product-page-custom-column.php')) {
-	require_once plugin_dir_path(__FILE__) . 'inc/vroom-admin-product-page-custom-column.php';
 }
 if (file_exists(VROOM_PLUGIN_PATH . '/inc/front/' . VROOM_PREFIX . '.front.php')) {
 	require_once( VROOM_PLUGIN_PATH . '/inc/front/' . VROOM_PREFIX . '.front.php' );
 }
 
-$sizeychdata = get_vroom_sizey_chart_data();
 /**
  * Check and validate that WooCommerce plugin is active
  */
@@ -64,17 +56,6 @@ function wc_sizey_vroom_woocommerce_deactivated() {
 	echo '<div class="error"><p>' . esc_html( 'Sizey vroom requires WooCommerce to be installed and active.' ) . '</p></div>';
 }
 
-/**
- * Create Action link in the sizey plugin page.
- *
- * @return null
- *
-*/
-function printr( $data) {
-	echo '<pre>';
-	print_r($data);
-	echo '</pre>';
-}
 
 /**
  * Add some default options required for sizey.
@@ -264,30 +245,6 @@ function generate_vroom_config_form() {
 }
 
 
-function getVroomGlobalSizeyConfiguration() {
-	global $sizeychdata;
-	$sizesList = array();
-	foreach ($sizeychdata as $sizeys) {
-		$sizeslisting=array();
-		foreach ($sizeys['sizes'][0]['sizes'] as $individual_sizey_size) {
-			$sizeslisting[] = htmlspecialchars(sanitize_text_field($individual_sizey_size));
-		}
-		$sizesList = array_unique(array_merge($sizesList, $sizeslisting));
-	}
-	$sizes_List = array_filter($sizesList, 'strlen');
-	return $sizes_List;
-}
-
-
-/**
- * Deregister WooCommerce Scripts
- */
-add_action( 'wp_print_scripts', 'vroom_deregister_javascript', 100 );
-function vroom_deregister_javascript() {
-	wp_deregister_script( 'prettyPhoto' );
-	wp_deregister_script( 'prettyPhoto-init' );
-}
-
 function add_sizey_recommendation_button() {
 require_once(VROOM_PLUGIN_PATH . '/inc/front/' . VROOM_PREFIX . '.front.button.product.page.php');
 }
@@ -309,10 +266,10 @@ function generate_vroom_recommendation_add_to_cart_button() {
 	$sizey_recommendation_add_to_cart_button = get_option('vroom-sizey-recommendation-button-add-to-cart');
 	$cart_id = WC()->session->get('new_cart');
 	$earlier_session_data = WC()->session->get(WC()->session->get('new_cart'));
-	$variable_to_set_session = array();
-	$variable_to_set_session['unique_id'] = $unique_id;
-	$variable_to_set_session['product_' . $post_id]['sizey_recommendation'] = $sizey_recommendation;
-	$variable_to_set_session['product_' . $post_id]['available_sizes'] = $sizey_recommendation;
+	// $variable_to_set_session = array();
+	// $variable_to_set_session['unique_id'] = $unique_id;
+	// $variable_to_set_session['product_' . $post_id]['sizey_recommendation'] = $sizey_recommendation;
+	// $variable_to_set_session['product_' . $post_id]['available_sizes'] = $sizey_recommendation;
 	$recommendedsizes =  strtolower(htmlspecialchars(sanitize_text_field($sizey_recommendation['size'])));
 	foreach($sizey_recommendation['sizes'] as $recommendedsize) {
 
@@ -327,10 +284,10 @@ function generate_vroom_recommendation_add_to_cart_button() {
 	
 				$addToCartUrl = $product->get_permalink() . '?' . http_build_query($built_query);
 	
-				$data_to_return = '<a href="' . esc_url($addToCartUrl) . '" class="button" id="recommendation-url">' . esc_html($sizey_recommendation_add_to_cart_button) . '</a>';
-				$variable_to_set_session['product_' . $post_id]['add_to_cart_url'] = $addToCartUrl;
-				$variable_to_set_session['product_' . $post_id]['add_to_cart_url_with_anchor'] = $data_to_return;
-				$variable_to_set_session['product_' . $post_id]['sizey_size_unavailable_message'] = $sizey_size_unavailable_message;
+				// $data_to_return = '<a href="' . esc_url($addToCartUrl) . '" class="button" id="recommendation-url">' . esc_html($sizey_recommendation_add_to_cart_button) . '</a>';
+				// $variable_to_set_session['product_' . $post_id]['add_to_cart_url'] = $addToCartUrl;
+				// $variable_to_set_session['product_' . $post_id]['add_to_cart_url_with_anchor'] = $data_to_return;
+				// $variable_to_set_session['product_' . $post_id]['sizey_size_unavailable_message'] = $sizey_size_unavailable_message;
 				$jsontoreturn['status'] = 'success';
 				$jsontoreturn['url'] = $addToCartUrl;
 				$jsontoreturn['class'] = 'button';
@@ -350,22 +307,3 @@ function generate_vroom_recommendation_add_to_cart_button() {
 add_action( 'wp_ajax_nopriv_generate_vroom_recommendation_add_to_cart_button', 'generate_vroom_recommendation_add_to_cart_button' );
 add_action( 'wp_ajax_generate_vroom_recommendation_add_to_cart_button', 'generate_vroom_recommendation_add_to_cart_button' );
 
-
-
-function get_sizey_specific_data( $sizey_id = null) {
-	global $sizeychdata;
-	$individual_sizey_data = array();
-
-	foreach ($sizeychdata as $individual_sizey_ch_data) {
-		$individual_sizey_data[$individual_sizey_ch_data['id']]['brand'] = $individual_sizey_ch_data['brand'];
-		$individual_sizey_data[$individual_sizey_ch_data['id']]['gender'] = $individual_sizey_ch_data['gender'];
-		$individual_sizey_data[$individual_sizey_ch_data['id']]['garment'] = $individual_sizey_ch_data['garment'];
-		$individual_sizey_data[$individual_sizey_ch_data['id']]['extra'] = $individual_sizey_ch_data['extra']?$individual_sizey_ch_data['extra']:null;
-		$individual_sizey_data[$individual_sizey_ch_data['id']]['sizeType'] = null;
-	}
-	if (is_null($sizey_id)) {
-		return json_encode($individual_sizey_data);
-	}
-	return json_encode($individual_sizey_data[$sizey_id]);
-
-}
