@@ -307,3 +307,37 @@ function generate_vroom_recommendation_add_to_cart_button() {
 add_action( 'wp_ajax_nopriv_generate_vroom_recommendation_add_to_cart_button', 'generate_vroom_recommendation_add_to_cart_button' );
 add_action( 'wp_ajax_generate_vroom_recommendation_add_to_cart_button', 'generate_vroom_recommendation_add_to_cart_button' );
 
+
+
+add_action("woocommerce_thankyou", "after_confirmation_hook", 111, 1);
+  
+    
+function after_confirmation_hook($order_id)
+{
+	$order = wc_get_order($order_id);
+	$items = $order->get_items();
+	$qty=0;
+	foreach ($items as $item_id => $item_data)
+	{
+		$qty +=  $item_data->get_quantity();
+	}
+	$unique_id = $_COOKIE["unique-id"];
+	$sizey_api_key = get_option('vroom-sizey-api-key');
+	$endpointURL = "https://analytics-api-dot-sizey-ai.appspot.com/checkout";
+	$postdata =array("sessionId"=>$unique_id, "numOfProducts"=>$qty);
+	$postdata = json_encode($postdata);
+	$headers = array(
+		'Content-Type: application/json',
+		'x-sizey-key: '.$sizey_api_key
+	);
+
+	$ch = curl_init($endpointURL);
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	$result = curl_exec($ch);
+	curl_close($ch);
+
+}
