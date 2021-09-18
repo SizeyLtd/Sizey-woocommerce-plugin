@@ -13,7 +13,6 @@ $recommendedSizey = array();
 $recommendedsize = '';
 //Get Sizey Mapping data with boutique
 
-
 $new_cart = WC()->session->get('new_cart');
 if ( is_null($new_cart) ) {
 	WC()->session->set('new_cart', time());
@@ -47,6 +46,16 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 ?>
 	<div id="recommendation-button-nonce" data-nonce="<?php echo esc_attr( $nonce ); ?>"></div>
 	<script type="text/javascript">
+
+		function setCookie(cname, cvalue, exdays) {
+			const d = new Date();
+			d.setTime(d.getTime() + (exdays*24*60*60*1000));
+			let expires = "expires="+ d.toUTCString();
+			document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+		}
+
+		setCookie('sizey-api-key', '<?php echo esc_html($vroom_sizey_api_key); ?>', 1);
+		setCookie('current-page-product-id', '<?php echo esc_html($productID); ?>', 1);
 
 		fetch('https://vroom-api.sizey.ai/products/' + <?php echo esc_html($productID); ?>, {headers: {'x-sizey-key': '<?php echo esc_html($vroom_sizey_api_key); ?>'}}).then(o => o.json()).then(product => {
 			if(product.sizeChart?.id) {
@@ -119,6 +128,7 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 				}
 
 				var iframe = document.createElement('iframe');
+				window.vroom = iframe;
 				iframe.id = "sizey-vroom";
 				iframe.style.position = 'absolute';    
 				iframe.style.display = "table";
@@ -128,17 +138,13 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 				iframe.style.margin = 0;
 				iframe.style.border = 'none';
 				// iframe.src = "https://vroom.sizey.ai/";
-				iframe.src = "http://localhost:3000/?apikey=<?php echo esc_html($vroom_sizey_api_key); ?>";
+				iframe.src = "https://vroom.sizey.ai/?apikey=<?php echo esc_html($vroom_sizey_api_key); ?>";
 
 				iframe.addEventListener('load', function() {
-					fetch('http://localhost:9000/my-avatar?measurementId=' + sessionStorage.getItem('sizey-measurement-id'), {headers: {'x-sizey-key': '<?php echo esc_html($vroom_sizey_api_key); ?>'}}).then(o => o.json()).then(avatar => {
-						console.log("Loading my avatar", avatar)
+					fetch('https://vroom-api.sizey.ai/my-avatar?measurementId=' + sessionStorage.getItem('sizey-measurement-id'), {headers: {'x-sizey-key': '<?php echo esc_html($vroom_sizey_api_key); ?>'}}).then(o => o.json()).then(avatar => {
 						iframe.contentWindow.postMessage({action: "CHANGE_AVATAR",payload: { id: avatar.id, scale: 1 }}, "*");
+						iframe.contentWindow.postMessage({action: "CHANGE_GARMENT", payload: { id: '<?php echo esc_html($productID); ?>', size: jQuery('#pa_size').val(), colorway: '', scale: 1 }}, "*");
 					});
-					setTimeout(function() {
-						// iframe.contentWindow.postMessage({action: "CHANGE_AVATAR",payload: { id: 'f_sz_mid_n56', scale: 1 }}, "*");
-						iframe.contentWindow.postMessage({action: "CHANGE_GARMENT", payload: { id: '<?php echo esc_html($productID); ?>', size: 'xl', colorway: '', scale: 1 }}, "*");
-					}, 1000);
 				}, true)
 
 				var viewport = document.getElementsByClassName('flex-viewport')[0];
@@ -146,19 +152,11 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 				viewport.appendChild(iframe);
 
 				jQuery( ".variations_form" ).on( "woocommerce_variation_select_change", function () {
-						// alert('woocommerce_variation_select_change');
-					// Fires whenever variation selects are changed
-					// console.log("KK", iframe)
 				} );
 
 				jQuery( ".single_variation_wrap" ).on( "show_variation", function ( event, variation ) {
-					// Fired when the user selects all the required dropdowns / attributes
-					// and a final variation is selected / shown
-					console.log("Loading size", variation.attributes.attribute_pa_size)
 					iframe.contentWindow.postMessage({action: "CHANGE_GARMENT", payload: { id: '<?php echo esc_html($productID); ?>', size: variation.attributes.attribute_pa_size, colorway: '', scale: 1 }}, "*");
 				} );	
-
-				// setTimeout(function() {viewport.appendChild(iframe);}, 1000)
 				
 			});		
 
