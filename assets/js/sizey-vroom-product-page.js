@@ -115,7 +115,6 @@ jQuery(document).ready(function () {
             "productId": product_id,
             "isRecommended": is_recommmended
         }
-        console.log("SA", jSONdata)
         endpointURL = "https://analytics-api-dot-sizey-ai.appspot.com/addtocart";
         jQuery.ajax({
             type: "POST",
@@ -125,7 +124,7 @@ jQuery(document).ready(function () {
             },
             url: endpointURL,
             data: JSON.stringify(jSONdata),
-            async: true,
+            async: false,
             success: function (response) {
                 return true;
             },
