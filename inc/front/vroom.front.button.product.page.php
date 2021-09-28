@@ -98,21 +98,29 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 
 
 	jQuery(window).load(function(){
+
+		// ugly quick code to detect if gallery exists
+		if(!document.getElementsByClassName('woocommerce-product-gallery') || !document.getElementsByClassName('woocommerce-product-gallery')[0] || !document.getElementsByClassName('woocommerce-product-gallery')[0].getElementsByTagName('ol') || !document.getElementsByClassName('woocommerce-product-gallery')[0].getElementsByTagName('ol').length) {
+			return;
+		}
 		setTimeout(function() {
 			for(var oldli of document.getElementsByClassName('woocommerce-product-gallery')[0].getElementsByTagName('ol')[0].getElementsByTagName('li')) {
     			oldli.addEventListener("click", function() {        
-		        var vroom = document.getElementById('sizey-vroom');
-				if(vroom) {
-					vroom.style.display = 'none';
-				}
-    
+					var vroom = document.getElementById('sizey-vroom');
+					if(vroom) {
+						vroom.style.display = 'none';
+					}
+		
 		  	  });
+
+
 			}
 
 			var li = document.createElement("li");
 
 			var img = document.createElement("img");
-			img.src = "https://www.sizey.ai/wp-content/uploads/sizey_logo_mvp-300x75.png";
+			// img.src = "https://www.sizey.ai/wp-content/uploads/sizey_logo_mvp-300x75.png";
+			img.src = "<?php echo plugins_url( '../../assets/img/vroom.png', __FILE__ ); ?>";
 			li.appendChild(img);
 
 			var photos = document.getElementsByClassName('woocommerce-product-gallery')[0].getElementsByTagName('ol')[0];
@@ -145,7 +153,7 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 						iframe.contentWindow.postMessage({action: "CHANGE_AVATAR",payload: { id: avatar.id, scale: 1 }}, "*");
 						iframe.contentWindow.postMessage({action: "CHANGE_GARMENT", payload: { id: '<?php echo esc_html($productID); ?>', size: jQuery('#pa_size').val(), colorway: '', scale: 1 }}, "*");
 					});
-				}, true)
+				}, true);
 
 				var viewport = document.getElementsByClassName('flex-viewport')[0];
 				console.log(viewport.style);
