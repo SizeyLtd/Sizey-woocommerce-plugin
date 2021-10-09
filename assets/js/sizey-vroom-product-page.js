@@ -35,8 +35,10 @@ function openRecommendationPopup(apikey, productId) {
                 sessionStorage.setItem("sizey-recommendation_" + productId, JSON.stringify(sizeyRecommendation))
             }
 
+            let unique_id = sessionStorage.getItem('unique-id');
+
             let jsonData = {
-                "sessionId": sessionStorage.getItem('unique-id'),
+                "sessionId": unique_id,
                 "productId": productId,
                 "measurementId": sessionStorage.getItem('sizey-measurement-id')
             }

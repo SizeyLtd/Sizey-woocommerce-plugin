@@ -3,7 +3,7 @@
  * Plugin Name: Sizey 
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -18,7 +18,7 @@ if ( !defined( 'VROOM_PLUGIN_URL' ) ) {
 	define( 'VROOM_PLUGIN_URL', plugin_dir_url( __FILE__ ) ); // Plugin url
 }
 if ( !defined( 'VROOM_VERSION' ) ) {
-	define( 'VROOM_VERSION', '1.2.0' ); // Version of plugin
+	define( 'VROOM_VERSION', '1.2.1' ); // Version of plugin
 }
 
 if ( !defined( 'VROOM_PLUGIN_PATH' ) ) {
@@ -266,10 +266,6 @@ function generate_vroom_recommendation_add_to_cart_button() {
 	$sizey_recommendation_add_to_cart_button = get_option('vroom-sizey-recommendation-button-add-to-cart');
 	$cart_id = WC()->session->get('new_cart');
 	$earlier_session_data = WC()->session->get(WC()->session->get('new_cart'));
-	// $variable_to_set_session = array();
-	// $variable_to_set_session['unique_id'] = $unique_id;
-	// $variable_to_set_session['product_' . $post_id]['sizey_recommendation'] = $sizey_recommendation;
-	// $variable_to_set_session['product_' . $post_id]['available_sizes'] = $sizey_recommendation;
 	$recommendedsizes =  strtolower(htmlspecialchars(sanitize_text_field($sizey_recommendation['size'])));
 	foreach($sizey_recommendation['sizes'] as $recommendedsize) {
 
@@ -283,11 +279,6 @@ function generate_vroom_recommendation_add_to_cart_button() {
 				$built_query['variation_id'] = $product_variation['variation_id'];
 	
 				$addToCartUrl = $product->get_permalink() . '?' . http_build_query($built_query);
-	
-				// $data_to_return = '<a href="' . esc_url($addToCartUrl) . '" class="button" id="recommendation-url">' . esc_html($sizey_recommendation_add_to_cart_button) . '</a>';
-				// $variable_to_set_session['product_' . $post_id]['add_to_cart_url'] = $addToCartUrl;
-				// $variable_to_set_session['product_' . $post_id]['add_to_cart_url_with_anchor'] = $data_to_return;
-				// $variable_to_set_session['product_' . $post_id]['sizey_size_unavailable_message'] = $sizey_size_unavailable_message;
 				$jsontoreturn['status'] = 'success';
 				$jsontoreturn['url'] = $addToCartUrl;
 				$jsontoreturn['class'] = 'button';

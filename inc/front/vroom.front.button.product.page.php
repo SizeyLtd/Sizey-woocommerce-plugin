@@ -25,11 +25,11 @@ if (get_option('vroom-sizey-button-type') === 'button') {
 	$sizeypopupclass =' ';
 }
 
-echo '<span id="sizeyRecommendedButton">';
+echo '<span id="sizeyRecommendedButton" style="display:none">';
 ?>
 	<a href="#" id="SizeyMe"
 	
-	   style="display: none; <?php echo esc_html(get_option('vroom-sizey-css')); ?>"
+	   style="<?php echo esc_html(get_option('vroom-sizey-css')); ?>"
 	   target="popup"  <?php echo esc_html($sizeypopupclass); ?>
 	   onclick="openSizeyPopupViaVroom('<?php echo esc_html($vroom_sizey_api_key); ?>',
 			   '<?php echo esc_html($productID); ?>',
@@ -40,7 +40,7 @@ echo '<span id="sizeyRecommendedButton">';
 <?php
  echo '</span>';
 
- echo '<span id="sizeyVroomRecommendedButton"></span>';
+ echo '<span id="sizeyVroomRecommendedButton" style="display:none"></span>';
 /* Create Nonce */
 $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 ?>
@@ -59,7 +59,7 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 
 		fetch('https://vroom-api.sizey.ai/products/' + <?php echo esc_html($productID); ?>, {headers: {'x-sizey-key': '<?php echo esc_html($vroom_sizey_api_key); ?>'}}).then(o => o.json()).then(product => {
 			if(product.sizeChart?.id) {
-				document.getElementById('SizeyMe').style.display = 'inline';
+				document.getElementById('sizeyRecommendedButton').style.display = 'inline';
 			}
 		});
 
@@ -82,7 +82,7 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 						data_to_show = data.content;
 					}
 					jQuery("#sizeyVroomRecommendedButton").html(data_to_show);
-                    jQuery("#sizeyVroomRecommendationResult").html(data_to_show);
+					document.getElementById('sizeyVroomRecommendedButton').style.display = 'inline';
 				}
 			});				
 
