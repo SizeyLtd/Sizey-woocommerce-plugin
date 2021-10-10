@@ -94,9 +94,6 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 		});
 
 
-
-
-
 	jQuery(window).load(function(){
 
 		// ugly quick code to detect if gallery exists
@@ -110,14 +107,10 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 					if(vroom) {
 						vroom.style.display = 'none';
 					}
-		
 		  	  });
-
-
 			}
 
 			var li = document.createElement("li");
-
 			var img = document.createElement("img");
 			// img.src = "https://www.sizey.ai/wp-content/uploads/sizey_logo_mvp-300x75.png";
 			img.src = "<?php echo plugins_url( '../../assets/img/vroom.png', __FILE__ ); ?>";
@@ -170,7 +163,6 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 
 		}, 1000)
 	});
-
 	</script>
 <?php
 

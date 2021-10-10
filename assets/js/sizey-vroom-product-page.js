@@ -90,9 +90,7 @@ function callRecommendationAPIForVroom(endpointURL, jSONdata, sizey_key) {
         contentType: 'application/json',
         headers: {
             'x-sizey-key': sizey_key,
-
         },
-
     });
 }
 
@@ -133,9 +131,22 @@ jQuery(document).ready(function () {
             error: function (jqXHR, textStatus, errorThrown) {
                 console.log(textStatus, errorThrown);
             },
-
         });
-
     });
+});
 
+
+jQuery(".single_variation_wrap").on("show_variation", function (event, variation) {
+    const attributes = { ...variation.attributes };
+    delete attributes['attribute_pa_size'];
+    var product_id = getCookie("current-page-product-id");
+
+    var recommendedSizes = JSON.parse(sessionStorage.getItem("sizey-recommendation_" + product_id)).sizes.map(s => s.size);
+
+    wp.ajax.post("get_variation_id", { attributes, product_id, recommendedSizes })
+        .done(function (response) {
+            var url = new URL(document.getElementById('recommendation-url').href);
+            url.searchParams.set('variation_id', response["variation_id"]);
+            document.getElementById('recommendation-url').href = url.toString();
+        });
 });

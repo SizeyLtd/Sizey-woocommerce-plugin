@@ -3,7 +3,7 @@
  * Plugin Name: Sizey 
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 1.2.1
+ * Version: 1.2.2
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -18,7 +18,7 @@ if ( !defined( 'VROOM_PLUGIN_URL' ) ) {
 	define( 'VROOM_PLUGIN_URL', plugin_dir_url( __FILE__ ) ); // Plugin url
 }
 if ( !defined( 'VROOM_VERSION' ) ) {
-	define( 'VROOM_VERSION', '1.2.1' ); // Version of plugin
+	define( 'VROOM_VERSION', '1.2.2' ); // Version of plugin
 }
 
 if ( !defined( 'VROOM_PLUGIN_PATH' ) ) {
@@ -254,11 +254,11 @@ function generate_vroom_recommendation_add_to_cart_button() {
 	check_ajax_referer( 'recommendation_add_to_cart_button', 'nonce_data' );
 	$jsontoreturn = array();
 	if (isset($_POST['post_id']) && isset($_POST['unique_id'])) {
-	$post_id = sanitize_text_field($_POST['post_id']);
+		$post_id = sanitize_text_field($_POST['post_id']);
 		if ( isset($_POST['unique_id'])) {
 			$unique_id = sanitize_text_field($_POST['unique_id']);
 		}
-	$sizey_size_unavailable_message = get_option('sizey-unavailable-message');
+		$sizey_size_unavailable_message = get_option('sizey-unavailable-message');
 		if (isset($_POST['sizey_recommendation'])) {
 			$sizey_recommendation = $_POST['sizey_recommendation'];//json_decode(stripslashes(sanitize_text_field($_POST['sizey_recommendation'])), true);
 		}
@@ -268,16 +268,14 @@ function generate_vroom_recommendation_add_to_cart_button() {
 	$earlier_session_data = WC()->session->get(WC()->session->get('new_cart'));
 	$recommendedsizes =  strtolower(htmlspecialchars(sanitize_text_field($sizey_recommendation['size'])));
 	foreach($sizey_recommendation['sizes'] as $recommendedsize) {
-
 		$product = wc_get_product($post_id);
 		$product_variations = $product->get_available_variations();
 		foreach ($product_variations as $product_variation) {
 			if(strtolower($recommendedsize['size']) == strtolower($product_variation['attributes']['attribute_pa_size'])) {
 				$built_query = array();
 				$built_query['add-to-cart'] = $post_id;
-				$built_query['attribute_pa_size'] = strtolower($recommendedsize['size']);
 				$built_query['variation_id'] = $product_variation['variation_id'];
-	
+				$built_query['attribute_pa_size'] = strtolower($recommendedsize['size']);
 				$addToCartUrl = $product->get_permalink() . '?' . http_build_query($built_query);
 				$jsontoreturn['status'] = 'success';
 				$jsontoreturn['url'] = $addToCartUrl;
@@ -295,11 +293,40 @@ function generate_vroom_recommendation_add_to_cart_button() {
 	exit();
 	}
 }
+
+function ajax_get_variation_id() {
+	$recommendedSizes = $_POST['recommendedSizes'];
+	$attr = $_POST['attributes'];
+	$product_id = sanitize_text_field($_POST['product_id']);
+
+	$product = wc_get_product($product_id);
+	$product_variations = $product->get_available_variations();
+	$matching_variations = array_filter($product_variations, function($variation) use ($attr, $recommendedSizes) {
+		$not_matching_attribute = array_filter($attr, function($v, $k) use ($variation) {
+			return strtolower($variation['attributes'][$k]) != strtolower($v);		
+		}, 1);
+
+		$matching_recommended_size = array_filter($recommendedSizes, function($v) use ($variation) {
+			return strtolower($variation['attributes']['attribute_pa_size']) == strtolower($v);		
+		}, 0);
+		return count($not_matching_attribute) == 0 && count($matching_recommended_size) > 0;
+	});	
+
+	if(count($matching_variations) == 0) {
+		wp_send_json_success(array());
+	}
+
+	$selected_variation = reset($matching_variations);
+	wp_send_json_success( array(
+		"variation_id" => $selected_variation["variation_id"],
+		"size" => $selected_variation["attributes"]["attribute_pa_size"],
+	) );
+}
+
 add_action( 'wp_ajax_nopriv_generate_vroom_recommendation_add_to_cart_button', 'generate_vroom_recommendation_add_to_cart_button' );
 add_action( 'wp_ajax_generate_vroom_recommendation_add_to_cart_button', 'generate_vroom_recommendation_add_to_cart_button' );
-
-
-
+add_action( 'wp_ajax_get_variation_id', 'ajax_get_variation_id' );
+add_action( 'wp_ajax_nopriv_get_variation_id', 'ajax_get_variation_id' );
 add_action("woocommerce_thankyou", "after_confirmation_hook", 111, 1);
   
     

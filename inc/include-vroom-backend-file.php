@@ -5,7 +5,8 @@ if (! defined('WPINC')) {
 }
 
 function vroom_registration_scripts() {
-
+    wp_enqueue_script( 'wp-util' );
+	
 	wp_register_script(
 		'sizey_vroom_custom',
 		plugins_url('../assets/js/sizey-vroom-custom.js', __FILE__),
