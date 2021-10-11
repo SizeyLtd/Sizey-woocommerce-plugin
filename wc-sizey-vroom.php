@@ -3,7 +3,7 @@
  * Plugin Name: Sizey 
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 1.2.2
+ * Version: 1.2.3
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -18,7 +18,7 @@ if ( !defined( 'VROOM_PLUGIN_URL' ) ) {
 	define( 'VROOM_PLUGIN_URL', plugin_dir_url( __FILE__ ) ); // Plugin url
 }
 if ( !defined( 'VROOM_VERSION' ) ) {
-	define( 'VROOM_VERSION', '1.2.2' ); // Version of plugin
+	define( 'VROOM_VERSION', '1.2.3' ); // Version of plugin
 }
 
 if ( !defined( 'VROOM_PLUGIN_PATH' ) ) {
@@ -263,34 +263,46 @@ function generate_vroom_recommendation_add_to_cart_button() {
 			$sizey_recommendation = $_POST['sizey_recommendation'];//json_decode(stripslashes(sanitize_text_field($_POST['sizey_recommendation'])), true);
 		}
 
-	$sizey_recommendation_add_to_cart_button = get_option('vroom-sizey-recommendation-button-add-to-cart');
-	$cart_id = WC()->session->get('new_cart');
-	$earlier_session_data = WC()->session->get(WC()->session->get('new_cart'));
-	$recommendedsizes =  strtolower(htmlspecialchars(sanitize_text_field($sizey_recommendation['size'])));
-	foreach($sizey_recommendation['sizes'] as $recommendedsize) {
-		$product = wc_get_product($post_id);
-		$product_variations = $product->get_available_variations();
-		foreach ($product_variations as $product_variation) {
-			if(strtolower($recommendedsize['size']) == strtolower($product_variation['attributes']['attribute_pa_size'])) {
-				$built_query = array();
-				$built_query['add-to-cart'] = $post_id;
-				$built_query['variation_id'] = $product_variation['variation_id'];
-				$built_query['attribute_pa_size'] = strtolower($recommendedsize['size']);
-				$addToCartUrl = $product->get_permalink() . '?' . http_build_query($built_query);
-				$jsontoreturn['status'] = 'success';
-				$jsontoreturn['url'] = $addToCartUrl;
-				$jsontoreturn['class'] = 'button';
-				$jsontoreturn['id'] = 'recommendation-url';
-				$jsontoreturn['content'] = $sizey_recommendation_add_to_cart_button;
-				echo esc_html(json_encode($jsontoreturn));
-				exit();			
+	$product = wc_get_product($post_id);
+	$product_variations = $product->get_available_variations();
+	$recommendedSizes =  array_map(function($size) { return strtolower($size["size"]); }, $sizey_recommendation['sizes']);
+	$attr = $_POST['attributes'];
+
+	$matching_variations = array_filter($product_variations, function($variation) use ($attr, $recommendedSizes) {
+		if(!is_null($attr)) {
+			$not_matching_attribute = array_filter($attr, function($v, $k) use ($variation) {
+				return strtolower($variation['attributes'][$k]) != strtolower($v);		
+			}, 1);
+			if(count($not_matching_attribute) > 0) {
+				return false;
 			}
 		}
-	}
-	$earlier_session_data = WC()->session->get($cart_id);
-	$new_session_data = array_merge($earlier_session_data, $variable_to_set_session);
-	WC()->session->set($cart_id, $new_session_data);
-	exit();
+
+		$matching_recommended_size = array_filter($recommendedSizes, function($v) use ($variation) {
+			return strtolower($variation['attributes']['attribute_pa_size']) == $v;		
+		}, 0);
+		return count($matching_recommended_size) > 0;
+	});	
+
+	if(count($matching_variations) == 0) {
+		wp_send_json_success(array());
+	}		
+
+	$selected_variation = reset($matching_variations);
+
+
+	$built_query = array();
+	$built_query['add-to-cart'] = $post_id;
+	$built_query['variation_id'] = $selected_variation['variation_id'];
+	$built_query['attribute_pa_size'] = strtolower($selected_variation['attributes']['attribute_pa_size']);
+	$addToCartUrl = $product->get_permalink() . '?' . http_build_query($built_query);
+	$jsontoreturn['status'] = 'success';
+	$jsontoreturn['url'] = $addToCartUrl;
+	$jsontoreturn['class'] = 'button';
+	$jsontoreturn['id'] = 'recommendation-url';
+	$jsontoreturn['content'] = get_option('vroom-sizey-recommendation-button-add-to-cart');
+
+	wp_send_json_success( $jsontoreturn );	
 	}
 }
 

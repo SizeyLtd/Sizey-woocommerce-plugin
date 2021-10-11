@@ -65,17 +65,26 @@ $nonce = wp_create_nonce( 'recommendation_add_to_cart_button' );
 
 		function call_realtime_vroom_button(unique_id, sizey_recommendation, product_id=<?php echo esc_html($productID); ?>) {
 			let nonce_data = jQuery( '#recommendation-button-nonce' ).data( 'nonce' );
-				jQuery.ajax({
+			attributes = {};
+			jQuery('table.variations select').each(function(prev, curr) {
+				var value = jQuery(this).val();
+				if(value) {
+					attributes[curr.name] = value;
+				}
+			}, {});
+			delete attributes['attribute_pa_size'];
+
+			jQuery.ajax({
 				url: "<?php echo esc_url(admin_url('admin-ajax.php')); ?>",
 				type: 'POST',
 				data: {
-					action: "generate_vroom_recommendation_add_to_cart_button","post_id":product_id, "unique_id": unique_id, "sizey_recommendation":sizey_recommendation, "nonce_data": nonce_data
+					action: "generate_vroom_recommendation_add_to_cart_button","post_id":product_id, "unique_id": unique_id, "sizey_recommendation":sizey_recommendation, "attributes": attributes, "nonce_data": nonce_data
 				},
-				success: function (data, textStatus, jqXHR) {
+				success: function (res, textStatus, jqXHR) {
+
+					let data = res.data;
 
 					let data_to_show = '';
-					data = jQuery('<textarea />').html(data).text();
-					data =JSON.parse(data);
 					if(undefined !== data.url) {
 						data_to_show = '<a href="'+data.url+'" id="'+data.id+'" class="'+data.class+'" >'+data.content+'</a>';
 					} else {
