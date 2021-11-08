@@ -3,7 +3,7 @@
  * Plugin Name: Sizey 
  * Plugin URI: https://www.sizey.ai/
  * Description: Sizey Vroom woocommerce plugin
- * Version: 1.2.3
+ * Version: 1.2.5
  * Author: Sizey Ltd.
  * Author URI: https://www.sizey.ai/
  */
@@ -18,7 +18,7 @@ if ( !defined( 'VROOM_PLUGIN_URL' ) ) {
 	define( 'VROOM_PLUGIN_URL', plugin_dir_url( __FILE__ ) ); // Plugin url
 }
 if ( !defined( 'VROOM_VERSION' ) ) {
-	define( 'VROOM_VERSION', '1.2.3' ); // Version of plugin
+	define( 'VROOM_VERSION', '1.2.5' ); // Version of plugin
 }
 
 if ( !defined( 'VROOM_PLUGIN_PATH' ) ) {
@@ -56,6 +56,14 @@ function wc_sizey_vroom_woocommerce_deactivated() {
 	echo '<div class="error"><p>' . esc_html( 'Sizey vroom requires WooCommerce to be installed and active.' ) . '</p></div>';
 }
 
+function optionExists($option_name) {
+    global $wpdb;
+    $row = $wpdb->get_row($wpdb->prepare("SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $option_name));
+    if (is_object($row)) {
+        return true;
+    }
+    return false;
+}
 
 /**
  * Add some default options required for sizey.
@@ -64,22 +72,17 @@ function wc_sizey_vroom_woocommerce_deactivated() {
  * @since    1.0.0
  */
 function setup_vroom_sizey() {
-	$attributes = wc_get_attribute_taxonomies();
-	$allAttr = array();
-	foreach ($attributes as $attr) {
-		$allAttr[] =$attr->attribute_name;
+	if ( ! optionExists( 'vroom-sizey-button-type' ) ) {
+		add_option('vroom-sizey-button-type', 'button');
 	}
-	update_option('vroom-sizey-button-type', 'button');
-	update_option('vroom-sizey-button', 'Find my size now!');
-	update_option('vroom-sizey-unavailable-message', 'Your perfect fit size of this product is not available. Try another size or product.');
-	update_option('vroom-sizey-button-position', 'woocommerce_after_add_to_cart_button');
-	if (count($allAttr)==1) {
-		update_option('vroom-global-size-attributes', $allAttr[0]);
-		return true;
+	if ( ! optionExists( 'vroom-sizey-button' ) ) {
+		add_option('vroom-sizey-button', 'Find my size now!');
 	}
-	if (in_array('size', $allAttr)) {
-		update_option('vroom-global-size-attributes', 'size');
-		return true;
+	if ( ! optionExists( 'vroom-sizey-unavailable-message' ) ) {
+		add_option('vroom-sizey-unavailable-message', 'Your perfect fit size of this product is not available. Try another size or product.');
+	}
+	if ( ! optionExists( 'vroom-sizey-button-position' ) ) {
+		add_option('vroom-sizey-button-position', 'woocommerce_after_add_to_cart_button');
 	}
 	return true;
 }

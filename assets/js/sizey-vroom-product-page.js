@@ -23,7 +23,7 @@ function setCookie(cname, cvalue, exdays) {
 
 function openRecommendationPopup(apikey, productId) {
     const storedMeasurementId = sessionStorage.getItem("sizey-measurement-id");
-    let url = "https://recommendation.sizey.ai?apikey=" + apikey + "&productId=" + productId + "&measurementId=" +
+    let url = "https://my.sizey.ai/recommendation?apikey=" + apikey + "&productId=" + productId + "&measurementId=" +
         storedMeasurementId;
     let wnd = window.open(url, 'popup', 'width=800,height=800,scrollbars=yes,resizable=yes');
     window.onmessage = function (e) {
@@ -141,7 +141,18 @@ jQuery(".single_variation_wrap").on("show_variation", function (event, variation
     delete attributes['attribute_pa_size'];
     var product_id = getCookie("current-page-product-id");
 
-    var recommendedSizes = JSON.parse(sessionStorage.getItem("sizey-recommendation_" + product_id)).sizes.map(s => s.size);
+    var recommendation = sessionStorage.getItem("sizey-recommendation_" + product_id);
+    if(!recommendation) {
+        return;
+    }
+
+    var r = JSON.parse(recommendation);
+
+    if(!r || !r.sizes) {
+        return;
+    }
+
+    var recommendedSizes = r.sizes.map(s => s.size);
 
     wp.ajax.post("get_variation_id", { attributes, product_id, recommendedSizes })
         .done(function (response) {
